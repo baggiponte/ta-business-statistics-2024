@@ -1,0 +1,363 @@
+---
+title: "Introduction to R - Atomic Vector Types"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
+This lecture covers the following:
+
+1. Sequence types: vectors, matrices and dataframes.
+2. How to access elements in sequences.
+
+# Introduction to Sequence Types
+
+The three main sequence types you are going to encounter are vectors, lists, matrices and dataframes.
+
+Vectors and matrices are **homogeneous**, which means they contain objects of the same type. Lists and dataframes are the opposites, i.e. they are **heterogeneous**. Lists are a bit peculiar, and we will not cover them today. We will also discuss dataframes more thoroughly in the second lecture. Here are some examples of vectors, matrices and dataframes:
+
+1. **Vectors** - Vectors are one-dimensional arrays that can hold a collection of values of the same data type. Here's an example of how to create a vector in R:
+
+```{r}
+# Create a numeric vector
+numeric_vector <- c(1, 2, 3, 4, 5)
+
+# Create a character vector
+character_vector <- c("red", "green", "blue")
+```
+
+2. **Matrices** - Matrices are two-dimensional arrays that can hold a collection of values of the same data type. Here's an example of how to create a matrix in R:
+
+```{r}
+# Create a matrix with 3 rows and 2 columns
+matrix_data <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, ncol = 2)
+```
+
+3. **Data frames** - Data frames are two-dimensional structures that can hold a collection of values of different data types. Here's an example of how to create a data frame in R:
+
+```{r}
+# Create a data frame with 3 rows and 2 columns
+data_frame <- data.frame(name = c("John", "Mary", "Bob"),
+                         age = c(25, 30, 35))
+```
+
+# Vectors
+
+In R, a vector is a basic data structure that holds elements of the same data type, such as numeric, character, or logical values. Vectors are essential in R programming because they form the foundation for more complex data structures like matrices, data frames, and lists. You can create a vector using the `c()` function, which stands for "combine" or "concatenate."
+
+Here's a brief example of creating a numeric vector:
+```{r}
+numeric_vector <- c(1, 2, 3, 4, 5)
+```
+
+We can operate on vectors in the same way we did with atomic data types:
+
+1. **Mathematical functions:**
+
+You can use mathematical functions like `sqrt()`, `exp()`, and `log()` to perform calculations on each element of a numeric vector.
+
+```{r}
+numeric_vector <- c(1, 4, 9, 16)
+
+square_root <- sqrt(numeric_vector)
+exponential <- exp(numeric_vector)
+natural_log <- log(numeric_vector)
+```
+
+1. **Summary statistics functions:**
+
+You can use functions like `mean()`, `median()`, `min()`, `max()`, and `sum()` to calculate summary statistics for a numeric vector.
+
+```{r}
+numeric_vector <- c(1, 2, 3, 4, 5)
+
+mean_value <- mean(numeric_vector)
+median_value <- median(numeric_vector)
+min_value <- min(numeric_vector)
+max_value <- max(numeric_vector)
+total_sum <- sum(numeric_vector)
+```
+
+1. **String functions:**
+
+You can use string functions like `toupper()`, `tolower()`, `nchar()`, and `substr()` to manipulate character vectors.
+
+```{r}
+fruits <- c("apple", "banana", "cherry")
+
+uppercase_fruits <- toupper(fruits)
+lowercase_fruits <- tolower(fruits)
+fruit_lengths <- nchar(fruits)
+first_two_letters <- substr(fruits, start = 1, stop = 2)
+```
+
+## Indexing
+
+When we start reasoning about sequences, we need to know how to access some of its elements. This operation is know as indexing. In R, indexing a vector refers to the process of accessing or selecting specific elements from the vector based on their positions or values. You can index a vector using square brackets `[]` immediately after the vector name, with the desired positions or conditions specified inside the brackets.
+
+There are two primary ways to index a vector in R:
+
+1. **Positive indexing:** This method allows you to select elements by their positions. For example, if you want to access the third element of a vector, you can use the following syntax:
+
+```{r}
+vector_name[3]
+```
+
+You can also select multiple elements by specifying a vector of positions:
+
+```{r}
+vector_name[c(1, 3, 5)]
+```
+
+1. **Logical indexing:** This method allows you to select elements based on a logical condition. For example, if you want to access all elements greater than a specific value, you can use the following syntax:
+
+```{r}
+vector_name[vector_name > value]
+```
+
+You can also use other logical operations, such as `<`, `<=`, `>=`, `==`, and `!=`, to create more complex conditions.
+
+Here's an example of indexing a numeric vector in R:
+
+```{r}
+numeric_vector <- c(1, 2, 3, 4, 5)
+
+# Positive indexing
+first_element <- numeric_vector[1]
+second_and_fourth_elements <- numeric_vector[c(2, 4)]
+second_to_fourth_elements <- numeric_vector[2:4]
+
+# Logical indexing
+elements_greater_than_3 <- numeric_vector[numeric_vector > 3]
+```
+
+**Exercise 1:** Create a character vector containing the names of four cities.
+
+**Solution:**
+
+```{r}
+cities <- c("New York", "London", "Paris", "Tokyo")
+```
+
+**Exercise 2:** Create a logical vector with five elements, representing the truth values of some statement.
+
+**Solution:**
+
+```{r}
+logical_vector <- c(TRUE, FALSE, TRUE, FALSE, TRUE)
+```
+
+**Exercise 3:** Indexing and Summary Statistics
+
+Create a numeric vector containing the ages of 10 individuals. Then, perform the following tasks:
+
+a. Access the 3rd and 7th elements of the vector.
+b. Calculate the mean, median, and standard deviation of the vector.
+
+**Solution:**
+
+```{r}
+ages <- c(25, 30, 35, 40, 45, 50, 55, 60, 65, 70)
+
+# Indexing
+third_age <- ages[3]
+seventh_age <- ages[7]
+
+# Summary statistics
+mean_age <- mean(ages)
+median_age <- median(ages)
+sd_age <- sd(ages)
+```
+
+## Matrices
+
+In R, a matrix is a two-dimensional data structure consisting of rows and columns, where all elements have the same data type (numeric, character, or logical). Matrices are essential for various data manipulation and analysis tasks, particularly in linear algebra and multivariate statistics.
+
+Here's a brief introduction to matrices in R, along with examples of functions applied to matrices and indexing:
+
+**Creating a matrix:**
+
+You can create a matrix using the `matrix()` function. The function takes a vector of elements, the number of rows (`nrow`) and columns (`ncol`), and an optional argument `byrow` to specify whether the matrix should be filled by rows (`TRUE`) or by columns (`FALSE`, the default).
+
+```{r}
+# Create a 3x2 matrix filled by columns
+matrix_example <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, ncol = 2)
+```
+
+**Matrix functions:**
+
+Several functions can be applied to matrices for various operations, such as transpose, determinant, and matrix multiplication.
+
+```{r}
+# Transpose a matrix
+transpose_matrix <- t(matrix_example)
+
+# Calculate the determinant of a matrix
+determinant_value <- det(matrix_example)
+
+# Matrix multiplication
+matrix2 <- matrix(c(7, 8, 9, 10, 11, 12), nrow = 3, ncol = 2)
+multiplication_result <- matrix_example %*% matrix2
+```
+
+**Indexing a matrix:**
+
+```{r}
+# Create a 3x4 matrix filled by columns
+matrix_example <- matrix(c(1, 4, 7, 10,
+                           2, 5, 8, 11,
+                           3, 6, 9, 12),
+                         nrow = 3, ncol = 4)
+```
+
+Now, let's perform subsetting with bigger ranges:
+
+```{r}
+# Subset the first two rows and the last three columns
+subset_matrix_1 <- matrix_example[1:2, 2:4]
+
+# Subset the last two rows and all columns
+subset_matrix_2 <- matrix_example[2:3, ]
+
+# Subset all rows and the first two columns
+subset_matrix_3 <- matrix_example[, 1:2]
+```
+
+Next, let's perform logical indexing (or masking) on the matrix:
+
+```{r}
+# Create a logical matrix for masking
+logical_matrix <- matrix_example > 5
+
+# Subset the matrix using the logical matrix
+subset_matrix_logical <- matrix_example[logical_matrix]
+```
+
+You can also perform logical indexing on specific rows or columns:
+
+```{r}
+# Create a logical vector for masking the first column
+logical_vector_col <- matrix_example[, 1] > 2
+
+# Subset the first column using the logical vector
+subset_column_logical <- matrix_example[logical_vector_col, 1]
+
+# Create a logical vector for masking the second row
+logical_vector_row <- matrix_example[2, ] > 8
+
+# Subset the second row using the logical vector
+subset_row_logical <- matrix_example[2, logical_vector_row]
+```
+
+# Distributions
+
+Among R builtin functions, there are generators for most statistical distributions. These functions return a vector of random values.
+
+1.  **Uniform distribution**: Sample 10 values from a uniform distribution between 0 and 1.
+
+```{r}
+runif(10)
+```
+
+2.  **Normal distribution**: Sample 1000 values from a normal distribution with mean 0 and standard deviation 1.
+
+```{r}
+rnorm(1000)
+```
+
+3.  **Exponential distribution**: Sample 500 values from an exponential distribution with rate parameter 0.5.
+
+```{r}
+rexp(500, rate = 0.5)
+```
+
+4.  **Binomial distribution**: Sample 200 values from a binomial distribution with parameters n = 10 and p = 0.3.
+
+```{r}
+rbinom(200, size = 10, prob = 0.3)
+```
+
+5.  **Poisson distribution**: Sample 300 values from a Poisson distribution with lambda = 3.
+
+```{r}
+rpois(300, lambda = 3)
+```
+
+6.  **Gamma distribution**: Sample 400 values from a gamma distribution with shape parameter 2 and scale parameter 0.5.
+
+```{r}
+rgamma(400, shape = 2, scale = 0.5)
+```
+
+7.  **Beta distribution**: Sample 250 values from a beta distribution with shape parameters alpha = 1 and beta = 3.
+
+```{r}
+rbeta(250, shape1 = 1, shape2 = 3)
+```
+
+## Exercises
+
+1. **Exercise:** Generate a sample of 100 observations from a normal distribution with mean 50 and standard deviation 10. Compute the sample mean and sample standard deviation.
+
+ **Solution:**
+
+ ```{r}
+ set.seed(123) # for reproducibility
+ sample <- rnorm(100, mean = 50, sd = 10)
+ sample_mean <- mean(sample)
+ sample_sd <- sd(sample)
+ ```
+
+2. **Exercise:** Generate a sample of 500 observations from an exponential distribution with rate parameter 2. Compute the sample median and sample interquartile range (IQR).
+
+ **Solution:**
+
+ ```{r}
+ set.seed(456) # for reproducibility
+ sample <- rexp(500, rate = 2)
+ sample_median <- median(sample)
+ sample_iqr <- IQR(sample)
+ ```
+
+3. **Exercise:** Generate a sample of 1000 observations from a uniform distribution on the interval [0, 100]. Compute the sample variance.
+
+ **Solution:**
+
+ ```{r}
+ set.seed(789) # for reproducibility
+ sample <- runif(1000, min = 0, max = 100)
+ sample_variance <- var(sample)
+ ```
+
+4. **Exercise:** Generate a sample of 200 observations from a Poisson distribution with lambda = 5. Compute the sample skewness and sample kurtosis.
+
+ **Solution:**
+
+ ```{r}
+ set.seed(111) # for reproducibility
+ sample <- rpois(200, lambda = 5)
+ library(e1071) # for skewness and kurtosis functions
+ sample_skewness <- skewness(sample)
+ sample_kurtosis <- kurtosis(sample)
+ ```
+
+5. **Exercise:** Generate a sample of 1000 observations from a standard normal distribution (mean = 0, standard deviation = 1). Calculate the sample's 1st quartile (25th percentile), median (50th percentile), and 3rd quartile (75th percentile). Also, find the 95th percentile of the sample.
+
+**Solution:**
+
+```{r}
+set.seed(123) # for reproducibility
+sample <- rnorm(1000, mean = 0, sd = 1)
+
+# Calculate the 1st quartile (25th percentile)
+q1 <- quantile(sample, probs = 0.25)
+
+# Calculate the median (50th percentile)
+median_value <- quantile(sample, probs = 0.5)
+
+# Calculate the 3rd quartile (75th percentile)
+q3 <- quantile(sample, probs = 0.75)
+
+# Calculate the 95th percentile
+p95 <- quantile(sample, probs = 0.95)
+```
