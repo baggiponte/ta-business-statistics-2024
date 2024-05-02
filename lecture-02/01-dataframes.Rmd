@@ -1,0 +1,169 @@
+---
+title: "Introduction to R - `data.frame`s and Beyond"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
+# Lecture outline
+
+* `data.frame`s: a better way to store real-world statistical data.
+* Operations on `data.frames`.
+* Beyond `data.frame`s: the `{tidyverse}`
+  * Installing packages with `install.packages()`
+  * Fundamentals of `{dplyr}`
+  * Fundamentals of data visualisation with `{ggplot}`.
+
+# `data.frame`s
+
+In R, a `data.frame` is a fundamental data structure that you'll use frequently, especially when working with data in a tabular format. It's essentially a list of vectors, matrices, or other data frames, all of the same length, which means they have the same number of rows. Each of these vectors represents a column in the data frame, and they can be of different data types.
+
+Before we dive into `data.frame`, let's briefly touch on the basic data types in R:
+
+1. **Numeric**: These are your typical real numbers, like 3.14 or -25.6. They can be integers or decimals.
+
+2. **Character (or String)**: These are sequences of characters, like "Hello, World!" or "R Programming". They are usually used for text data.
+
+3. **Logical**: These represent TRUE or FALSE values. They are often the result of comparisons or logical operations.
+
+4. **Factor**: Factors are used to represent categorical data. They look like character data, but they're actually stored as integers, with the character values serving as labels.
+
+5. **Date and Time**: These are special numeric types used to represent dates and times.
+
+Now, back to `data.frame`. Each column in a `data.frame` can be of a different data type, which makes `data.frame`s very flexible for storing and manipulating data. For example, one column could be numeric (like age), another could be a character (like name), and another could be a factor (like gender).
+
+Here's a simple example of creating a `data.frame`:
+
+```{r}
+# Create a numeric vector
+age <- c(23, 45, 34)
+
+# Create a character vector
+name <- c("Alice", "Bob", "Charlie")
+
+# Create a factor vector
+gender <- factor(c("Female", "Male", "Male"))
+
+# Combine these into a data frame
+data <- data.frame(name, age, gender)
+```
+
+In this example, `data` is a `data.frame` with three columns: `name` (character), `age` (numeric), and `gender` (factor). Each row corresponds to a single individual.
+
+## A brief side tour: the `factor` type
+
+In R, a **factor** is a special type of variable that takes on a limited set of values, known as levels. Factors are used to represent categorical or qualitative data. They are stored as integers, but they display as characters, which makes them both computationally efficient and human-readable.
+
+Here's a simple example of creating a factor:
+
+```{r}
+# Create a character vector
+colors <- c("red", "green", "blue", "red", "green")
+
+# Convert it to a factor
+colors_factor <- factor(colors)
+```
+
+In this example, `colors_factor` is a factor with three levels: "red", "green", and "blue". The levels are ordered alphabetically by default.
+
+Factors can also be ordered, meaning their levels have a specific order. This can be useful for ordinal categorical data, like "low", "medium", and "high". Here's how you can create an ordered factor:
+
+```{r}
+# Create a character vector
+size <- c("small", "medium", "large", "small", "large")
+
+# Convert it to an ordered factor
+size_factor <- ordered(size, levels = c("small", "medium", "large"))
+```
+
+In this example, `size_factor` is an ordered factor with three levels: "small", "medium", and "large". The order is specified in the `levels` argument.
+
+A couple of exercises:
+
+**Exercise 1:** Create a factor representing the days of the week, starting with Monday.
+
+```{r}
+# Solution
+days_of_week <- factor(c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"), levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+```
+
+**Exercise 2:** Create an ordered factor representing the education level: "primary", "secondary", "tertiary".
+
+```{r}
+# Solution
+education_level <- ordered(c("primary", "secondary", "tertiary"), levels = c("primary", "secondary", "tertiary"))
+```
+
+# The real purpose of `data.frame`s
+
+Real world data is messy and heterogeneous. This means that it includes different types of variables: numerical, categorical, date and time, etc. `data.frame`s can handle this heterogeneity by allowing each column to have a different data type. This makes `data.frame`s a flexible and convenient way to store and manipulate real-world data.
+
+Secondly, before fitting a machine learning or statistical model, we often need to transform the data into numerical representations. This is because many models can only handle numerical data. For example, categorical variables might need to be one-hot encoded, and date and time variables might need to be converted into numerical features like "day of the week" or "hour of the day". `data.frame`s make it easy to perform these transformations, as they allow you to add new columns and modify existing ones.
+
+Thirdly, `data.frame`s are great for exploring and cleaning data. They allow you to easily filter, sort, and group your data, which can help you understand its structure and identify any issues that need to be addressed. For example, you might use a `data.frame` to find missing values, outliers, or duplicate rows.
+
+This process is known as *data cleaning* and the transformation or addition of new columns is known as *feature engineering* (*feature* here just means column, or variable).
+
+## Enter `mtcars`
+
+The `mtcars` dataset contains information about 32 cars from the 1974 Motor Trend US magazine. The variables included are:
+
+1. `mpg`: Miles per gallon
+2. `cyl`: Number of cylinders
+3. `disp`: Displacement (cu.in.)
+4. `hp`: Gross horsepower
+5. `drat`: Rear axle ratio
+6. `wt`: Weight (1000 lbs)
+7. `qsec`: 1/4 mile time
+8. `vs`: Engine (0 = V-shaped, 1 = straight)
+9. `am`: Transmission (0 = automatic, 1 = manual)
+10. `gear`: Number of forward gears
+11. `carb`: Number of carburetors
+
+To access the `mtcars` dataset, you can simply type `mtcars` in the console.
+
+```{r}
+# Access the mtcars dataset
+data(mtcars)
+
+# Display the first 6 rows of the dataset
+head(mtcars)
+```
+
+The `mtcars` dataset is a `data.frame` with 32 rows (each representing a car) and 11 columns (each representing a variable). The dataset includes both numeric and categorical data. For example, `mpg` and `disp` are numeric variables, while `vs` and `am` are categorical variables (stored as numeric values, but they represent categories).
+
+Here are some properties of the `mtcars` dataset:
+
+- **Dimensions**: The dataset has 32 rows and 11 columns. You can check the dimensions using the `dim()` function.
+
+```{r}
+dim(mtcars)
+```
+
+- **Variable types**: The dataset includes both numeric and categorical variables. You can check the types of each variable using the `str()` function.
+
+```{r}
+str(mtcars)
+```
+
+- **Summary statistics**: You can calculate summary statistics for each variable using the `summary()` function.
+
+```{r}
+summary(mtcars)
+```
+
+# The `{tidyverse}`
+
+R's native `data.frame` library has been the cornerstone of data manipulation in R for many years. However, it comes with two main limitations:
+
+1. **Column Access**: Column access via the `$` operator or double square brackets (`[[`) can be less intuitive and more error-prone compared to modern alternatives.
+2. **Data Manipulation**: The base R functions for data manipulation (such as `apply`, `lapply`, `sapply`, etc.) can be less intuitive and more difficult to learn and use compared to the functions provided by newer packages.
+
+Because of these limits, the **tidyverse** was developed. It's a collection of R packages designed for data science. All packages in the tidyverse share an underlying design philosophy, grammar, and data structures. This is the **tibble**, AKA a modern reimagining of the `data.frame`: in fact, it's a contracted form of *tidy table*. It is part of the tidyverse and provides a data frame that is more user-friendly and consistent. Tibbles are designed to make data manipulation in R easier and more intuitive.
+
+The `{tidyverse}` became popular for several reasons:
+
+1. **Ease of Use**: The consistent syntax and grammar of the tidyverse packages make them easier to learn and use.
+2. **Intuitiveness**: Functions in the tidyverse often read like plain English, making the code more readable and intuitive.
+3. **Integration**: The tidyverse packages work seamlessly together, providing a comprehensive toolkit for data manipulation, visualization, and analysis.
+4. **Community and Support**: The tidyverse has a large and active community, with extensive documentation, tutorials, and support available.
