@@ -7,8 +7,10 @@ editor_options:
 
 This lecture covers the following:
 
-1. Sequence types: vectors, matrices and dataframes.
+1. Sequence types: vectors and matrices, vs lists and dataframes.
 2. How to access elements in sequences.
+3. A brief overview of matrices.
+4. Sampling from random distributions and computing summary statistics.
 
 # Introduction to Sequence Types
 
