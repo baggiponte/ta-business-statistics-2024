@@ -337,14 +337,15 @@ rbeta(250, shape1 = 1, shape2 = 3)
  sample_variance <- var(sample)
  ```
 
-4. **Exercise:** Generate a sample of 200 observations from a Poisson distribution with lambda = 5. Compute the sample skewness and sample kurtosis.
+4. **Exercise:** Generate a sample of 200 observations from a Poisson distribution with lambda = 5. Compute the sample skewness and sample kurtosis. *Note*: this exercise requires installing a library, named `{moments}`. Feel free to skip it.
 
  **Solution:**
 
  ```{r}
  set.seed(111) # for reproducibility
  sample <- rpois(200, lambda = 5)
- library(e1071) # for skewness and kurtosis functions
+
+ library(moments) # for skewness and kurtosis functions
  sample_skewness <- skewness(sample)
  sample_kurtosis <- kurtosis(sample)
  ```
