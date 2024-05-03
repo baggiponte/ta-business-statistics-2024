@@ -1,5 +1,5 @@
 ---
-title: "Introduction to R - Complex Vector Types"
+title: "Appendix 2: Introduction to R - Complex Vector Types"
 output: html_notebook
 editor_options:
   chunk_output_type: console
