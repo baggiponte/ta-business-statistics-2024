@@ -1,8 +1,21 @@
+---
+title: "Appendix 1: Introduction to R  Control flow"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
+# Lecture outline
+
+* if-else statements
+* for loops
+* while loops
+
 # Control flow
 
 Control flow and loops are programming constructs that allow you to execute different code blocks depending on certain conditions or to repeat a block of code a certain number of times.
 
-In R, there are several ways to implement control flow and loops. Some of the most common ones are:
+In R, there are several ways to implement control flow and loops. The three key control flow structure are if-else statements, for loops and while loops.
 
 ## If-else statements
 
