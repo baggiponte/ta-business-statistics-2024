@@ -14,6 +14,10 @@ This lecture covers the following:
 3. A brief overview of matrices.
 4. Sampling from random distributions and computing summary statistics.
 
+# References
+
+* Installing [R and R Studio](https://rstudio-education.github.io/hopr/starting.html#rstudio).
+
 # Introduction to Sequence Types
 
 The three main sequence types you are going to encounter are vectors, lists, matrices and dataframes.
