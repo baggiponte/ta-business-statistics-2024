@@ -5,7 +5,6 @@ editor_options:
   chunk_output_type: console
 ---
 
-
 ```{r setup}
 library(tidyverse)
 
@@ -52,7 +51,7 @@ We can also pass these very same arguments **outside** of the `mapping` argument
 
 ```{r more-aes-arguments}
 ggplot(data = mpg) +
-  geom_point(mapping = aes(x = displ, y = hwy), colour="blue", alpha=0.8, shape=1)
+  geom_point(mapping = aes(x = displ, y = hwy), colour = "blue", alpha = 0.8, shape = 1)
 ```
 
 We can use `{magrittr}`'s pipe operator (`%>%`) or the native-pipe (`|>`) to pass the data as an argument:
@@ -85,8 +84,8 @@ The aestethics specified in this way will be inherited by default in every subse
 
 ```{r}
 mpg %>%
-  ggplot(aes(x=displ, y=hwy)) +
-  geom_point(aes(color=class, shape=drv), size=2) +
+  ggplot(aes(x = displ, y = hwy)) +
+  geom_point(aes(color = class, shape = drv), size = 2) +
   scale_colour_viridis_d() +
   scale_y_log10() +
   labs(
@@ -120,16 +119,16 @@ With a simple `+ coord_*`, we can change the coordinates of our plots:
 mpg %>%
   # change the column type from char to factor
   mutate(across(.cols = where(is_character), .fns = as_factor)) %>%
-  ggplot(aes(x=manufacturer)) +
-  geom_bar(aes(fill=drv)) +
+  ggplot(aes(x = manufacturer)) +
+  geom_bar(aes(fill = drv)) +
   scale_fill_viridis_d() +
   coord_polar()
 
 mpg %>%
   # change the column type from char to factor
   mutate(across(.cols = where(is_character), .fns = as_factor)) %>%
-  ggplot(aes(x=manufacturer)) +
-  geom_bar(aes(fill=drv)) +
+  ggplot(aes(x = manufacturer)) +
+  geom_bar(aes(fill = drv)) +
   scale_fill_viridis_d() +
   coord_flip()
 ```
@@ -145,7 +144,7 @@ the `facet_wrap()` "layer" can be used to split the plot in different *facets*.
 ```{r facet-wrap}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy)) +
-  facet_wrap(~ class, nrow = 2)
+  facet_wrap(~class, nrow = 2)
 ```
 
 You can also create a grid, to facet the plot on the combination of two variables:
@@ -197,7 +196,7 @@ p2b <- ggplot(data = mpg) +
   labs(
     title = "Smooth Regression Line",
     subtitle = "By type of drive train (with color)"
-    ) +
+  ) +
   theme(plot.title.position = "plot")
 
 p2a | p2b
@@ -212,7 +211,7 @@ mpg %>%
   geom_smooth() +
   labs(
     title = "Smooth Regression Line + Scatterplot",
-    ) +
+  ) +
   theme(plot.title.position = "plot")
 ```
 
@@ -221,11 +220,11 @@ In this case, setting a "global" mapping can help remove code duplication. We ca
 ```{r}
 mpg %>%
   ggplot(mapping = aes(x = displ, y = hwy)) +
-  geom_point(aes(color=class)) +
+  geom_point(aes(color = class)) +
   geom_smooth() +
   labs(
     title = "Smooth Regression Line + Scatterplot",
-    ) +
+  ) +
   theme(plot.title.position = "plot")
 ```
 

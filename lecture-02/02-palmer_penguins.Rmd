@@ -50,11 +50,11 @@ The first step of EDA is to inspect the distribution of individual variables. *H
 
 ```{r}
 p1 <- ggplot(penguins, aes(x = bill_length_mm)) +
-  geom_histogram(binwidth = 2, fill = "darkorange", color="black", alpha=0.7) +
+  geom_histogram(binwidth = 2, fill = "darkorange", color = "black", alpha = 0.7) +
   labs(title = "Distribution of Bill Length", x = "Bill Length (mm)", y = "Frequency")
 
 p2 <- ggplot(penguins, aes(x = bill_depth_mm)) +
-  geom_histogram(binwidth = 1, fill = "lightyellow", color="black", alpha=0.7) +
+  geom_histogram(binwidth = 1, fill = "lightyellow", color = "black", alpha = 0.7) +
   labs(title = "Distribution of Bill Depth", x = "Bill Depth (mm)", y = "Frequency")
 
 p1 / p2
@@ -68,7 +68,7 @@ p1 / p2
 
 ```{r}
 ggplot(penguins, aes(x = flipper_length_mm)) +
-  geom_histogram(binwidth = 5, fill = "lightcoral", color="black", alpha=0.7) +
+  geom_histogram(binwidth = 5, fill = "lightcoral", color = "black", alpha = 0.7) +
   labs(title = "Distribution of Flipper Length", x = "Flipper Length (mm)", y = "Frequency")
 ```
 
@@ -80,7 +80,7 @@ ggplot(penguins, aes(x = flipper_length_mm)) +
 
 ```{r}
 ggplot(penguins, aes(x = body_mass_g)) +
-  geom_histogram(binwidth = 100, fill = "cyan4", color="black", alpha=0.7) +
+  geom_histogram(binwidth = 100, fill = "cyan4", color = "black", alpha = 0.7) +
   labs(title = "Distribution of Body Mass", x = "Body Mass (g)", y = "Frequency")
 ```
 
