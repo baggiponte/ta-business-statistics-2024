@@ -1,0 +1,324 @@
+---
+title: "Introduction to Exploratory Data Analysis with `{palmerpenguins}`"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(ggplot2)
+library(patchwork)
+library(palmerpenguins)
+
+theme_set(theme_minimal())
+```
+
+# Introduction to the Palmer Penguins Dataset
+
+![Penguins](https://allisonhorst.github.io/palmerpenguins/reference/figures/lter_penguins.png)
+
+The Palmer Penguins dataset is a popular dataset for practicing data analysis and visualization. It provides information about three species of penguins observed in the Palmer Archipelago, Antarctica. The dataset includes measurements of various physical attributes of the penguins, such as their flipper lengths and body masses, as well as other details like their species and the island they were observed on.
+
+# Data Dictionary
+
+Here is a brief description of each variable in the dataset:
+
+1.  **species**: The species of the penguin (categorical: "Adelie", "Chinstrap", "Gentoo").
+2.  **island**: The island where the penguin was observed (categorical: "Torgersen", "Biscoe", "Dream").
+3.  **bill_length_mm**: The length of the penguin's bill (continuous, measured in millimeters).
+4.  **bill_depth_mm**: The depth of the penguin's bill (continuous, measured in millimeters).
+5.  **flipper_length_mm**: The length of the penguin's flipper (continuous, measured in millimeters).
+6.  **body_mass_g**: The body mass of the penguin (continuous, measured in grams).
+7.  **sex**: The sex of the penguin (categorical: "male", "female").
+8.  **year**: The year of observation (categorical: 2007, 2008, 2009).
+
+![bill dimensions](https://allisonhorst.github.io/palmerpenguins/reference/figures/culmen_depth.png)
+
+# Exploratory Data Analysis
+
+Let's perform an exploratory data analysis (EDA) on the Palmer Penguins dataset. We will use the `ggplot2` package to visualize the distribution of each variable.
+
+Exploratory Data Analysis (EDA) is a crucial step in the data analysis process where the primary goal is to examine the data, uncover underlying patterns, spot anomalies, test hypotheses, and check assumptions through statistical summaries and graphical representations. EDA helps in understanding the data's structure, identifying the most important variables, and gaining insights that guide further analysis.
+
+To quote Arthur Schopenhauer, "The alchemists in their search for gold discovered many other things of greater value." This aptly describes the essence of EDA: while we may start with a specific question or objective, the process often reveals unexpected and valuable insights that can significantly enhance our understanding of the dataset.
+
+# Distribution of Quantitative Variables
+
+The first step of EDA is to inspect the distribution of individual variables. *Hint*: pay close attention to the scales, as well as the extreme values!
+
+## Bill Length and Bill Depth Distribution
+
+```{r}
+p1 <- ggplot(penguins, aes(x = bill_length_mm)) +
+  geom_histogram(binwidth = 2, fill = "darkorange", color="black", alpha=0.7) +
+  labs(title = "Distribution of Bill Length", x = "Bill Length (mm)", y = "Frequency")
+
+p2 <- ggplot(penguins, aes(x = bill_depth_mm)) +
+  geom_histogram(binwidth = 1, fill = "lightyellow", color="black", alpha=0.7) +
+  labs(title = "Distribution of Bill Depth", x = "Bill Depth (mm)", y = "Frequency")
+
+p1 / p2
+```
+
+- **`geom_histogram`**: Creates histograms to visualize the distribution of continuous variables.
+- **`binwidth`**: Sets the width of the bins in the histogram.
+- **`labs`**: Adds titles and labels to the plots.
+
+## Flipper Length Distribution
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm)) +
+  geom_histogram(binwidth = 5, fill = "lightcoral", color="black", alpha=0.7) +
+  labs(title = "Distribution of Flipper Length", x = "Flipper Length (mm)", y = "Frequency")
+```
+
+- **`geom_histogram`**: Creates a histogram to visualize the distribution of flipper length.
+- **`binwidth`**: Sets the width of the bins in the histogram.
+- **`labs`**: Adds a title and labels to the plot.
+
+## Body Mass Distribution
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g)) +
+  geom_histogram(binwidth = 100, fill = "cyan4", color="black", alpha=0.7) +
+  labs(title = "Distribution of Body Mass", x = "Body Mass (g)", y = "Frequency")
+```
+
+- **`geom_histogram`**: Creates a histogram to visualize the distribution of body mass.
+- **`binwidth`**: Sets the width of the bins in the histogram.
+- **`labs`**: Adds a title and labels to the plot.
+
+# Distribution of Categorical Variables
+
+Categorical variables usually bear a lot of meaning: in this case, for example, they encode our expectations about significant physiological differences about individual samples.
+
+```{r}
+p1 <- ggplot(penguins, aes(x = species)) +
+  geom_bar(fill = "lightblue") +
+  labs(title = "Distribution of Categorical variables", x = "Species", y = "Count")
+
+p2 <- ggplot(penguins, aes(x = island)) +
+  geom_bar(fill = "lightcoral") +
+  labs(title = "", x = "Island", y = "Count")
+
+p3 <- ggplot(penguins, aes(x = sex)) +
+  geom_bar(fill = "orange") +
+  labs(title = "", x = "Sex", y = "Count")
+
+p1 / p2 / p3
+```
+
+- **`geom_bar`**: Creates bar plots to visualize the count of different categories.
+- **`labs`**: Adds titles and labels to the plots.
+- The last row combines the three plots to generate a unique picture.
+
+# Relationship Between Qualitative Variables
+
+Now we would like to display the interaction between categorical variables.
+
+## Penguin Sex by Species
+
+```{r}
+ggplot(penguins, aes(x = sex, fill = species)) +
+  geom_bar(alpha = 0.8) +
+  scale_fill_manual(values = c("darkorange", "purple", "cyan4"), guide = FALSE) +
+  facet_wrap(~species, ncol = 1) +
+  coord_flip() +
+  labs(
+    title = "Distribution of Penguin Sex by Species",
+    x = "Sex",
+    y = "Count",
+    fill = "Species"
+  )
+```
+
+- **`geom_bar`**: Creates a bar plot to visualize the count of sexes within each species.
+- **`scale_fill_manual`**: Manually sets fill colors for the species.
+- **`facet_wrap`**: Creates separate plots for each species.
+- **`coord_flip`**: Flips the x and y coordinates for better readability.
+- **`labs`**: Adds a title and labels to the plot.
+
+## Penguin Sex by Island
+
+```{r}
+ggplot(penguins, aes(x = sex, fill = island)) +
+  geom_bar(alpha = 0.8) +
+  scale_fill_manual(values = c("darkorange", "purple", "cyan4"), guide = FALSE) +
+  facet_wrap(~island, ncol = 1) +
+  coord_flip() +
+  labs(
+    title = "Distribution of Penguin Sex by Island",
+    x = "Sex",
+    y = "Count",
+    fill = "Island"
+  )
+```
+
+- **`geom_bar`**: Creates a bar plot to visualize the count of sexes within each island.
+- **`scale_fill_manual`**: Manually sets fill colors for the islands.
+- **`facet_wrap`**: Creates separate plots for each island.
+- **`coord_flip`**: Flips the x and y coordinates for better readability.
+- **`labs`**: Adds a title and labels to the plot.
+
+# Distribution of Quantitative Variables by Species
+
+Finally, we can display the interaction between categorical and quantitative variables.
+
+## Bill Length and Bill Depth by Species
+
+```{r}
+p1 <- ggplot(penguins, aes(x = species, y = bill_length_mm, fill = species)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("lightblue", "lightpink", "lightgreen")) +
+  labs(title = "Bill Length by Species", x = "Species", y = "Bill Length (mm)")
+
+p2 <- ggplot(penguins, aes(x = species, y = bill_depth_mm, fill = species)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("lightblue", "lightpink", "lightgreen")) +
+  labs(title = "Bill Depth by Species", x = "Species", y = "Bill Depth (mm)")
+
+p1 / p2
+```
+
+- **`geom_boxplot`**: Creates boxplots to visualize the distribution of bill length and bill depth across species.
+- **`scale_fill_manual`**: Manually sets fill colors for the species.
+- **`labs`**: Adds titles and labels to the plots.
+- **`patchwork`**: Combines the individual plots vertically.
+
+## Flipper Length by Species
+
+```{r}
+ggplot(penguins, aes(x = species, y = flipper_length_mm, fill = species)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("lightblue", "lightpink", "lightgreen")) +
+  labs(title = "Flipper Length by Species", x = "Species", y = "Flipper Length (mm)")
+```
+
+- **`geom_boxplot`**: Creates a boxplot to visualize the distribution of flipper length across species.
+- **`scale_fill_manual`**: Manually sets fill colors for the species.
+- **`labs`**: Adds a title and labels to the plot.
+
+## Body Mass by Species
+
+```{r}
+ggplot(penguins, aes(x = species, y = body_mass_g, fill = species)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("lightblue", "lightpink", "lightgreen")) +
+  labs(title = "Body Mass by Species", x = "Species", y = "Body Mass (g)")
+```
+
+- **`geom_boxplot`**: Creates a boxplot to visualize the distribution of body mass across species.
+- **`scale_fill_manual`**: Manually sets fill colors for the species.
+- **`labs`**: Adds a title and labels to the plot.
+
+# Scatterplots: Displaying Pairs of Quantitative Variables
+
+This section creates scatterplots for all possible combinations of quantitative variables in the Palmer Penguins dataset. Each plot will show the relationship between two quantitative variables, colored by species and sex, with the legend placed at the bottom.
+
+## Bill Length vs. Bill Depth
+
+```{r}
+# Scatterplot: Bill Length vs. Bill Depth (Colored by Species)
+p1 <- ggplot(penguins, aes(x = bill_length_mm, y = bill_depth_mm, color = species)) +
+  geom_point() +
+  labs(x = "Bill Length (mm)", y = "Bill Depth (mm)", color = "Species") +
+  theme(legend.position = "bottom")
+
+# Scatterplot: Bill Length vs. Bill Depth (Colored by Sex)
+p2 <- ggplot(penguins, aes(x = bill_length_mm, y = bill_depth_mm, color = sex)) +
+  geom_point() +
+  labs(x = "Bill Length (mm)", y = "Bill Depth (mm)", color = "Sex") +
+  theme(legend.position = "bottom")
+
+(p1 | p2) + plot_annotation(title = "Bill Length vs. Bill Depth")
+```
+
+## Bill Length vs. Flipper Length
+
+```{r}
+# Scatterplot: Bill Length vs. Flipper Length (Colored by Species)
+p3 <- ggplot(penguins, aes(x = bill_length_mm, y = flipper_length_mm, color = species)) +
+  geom_point() +
+  labs(x = "Bill Length (mm)", y = "Flipper Length (mm)", color = "Species") +
+  theme(legend.position = "bottom")
+
+# Scatterplot: Bill Length vs. Flipper Length (Colored by Sex)
+p4 <- ggplot(penguins, aes(x = bill_length_mm, y = flipper_length_mm, color = sex)) +
+  geom_point() +
+  labs(x = "Bill Length (mm)", y = "Flipper Length (mm)", color = "Sex") +
+  theme(legend.position = "bottom")
+
+(p3 | p4) + plot_annotation(title = "Bill Length vs. Flipper Length")
+```
+
+## Bill Length vs. Body Mass
+
+```{r}
+# Scatterplot: Bill Length vs. Body Mass (Colored by Species)
+p5 <- ggplot(penguins, aes(x = bill_length_mm, y = body_mass_g, color = species)) +
+  geom_point() +
+  labs(x = "Bill Length (mm)", y = "Body Mass (g)", color = "Species") +
+  theme(legend.position = "bottom")
+
+# Scatterplot: Bill Length vs. Body Mass (Colored by Sex)
+p6 <- ggplot(penguins, aes(x = bill_length_mm, y = body_mass_g, color = sex)) +
+  geom_point() +
+  labs(x = "Bill Length (mm)", y = "Body Mass (g)", color = "Sex") +
+  theme(legend.position = "bottom")
+
+(p5 | p6) + plot_annotation(title = "Bill Length vs. Body Mass")
+```
+
+## Bill Depth vs. Flipper Length
+
+```{r}
+# Scatterplot: Bill Depth vs. Flipper Length (Colored by Species)
+p7 <- ggplot(penguins, aes(x = bill_depth_mm, y = flipper_length_mm, color = species)) +
+  geom_point() +
+  labs(x = "Bill Depth (mm)", y = "Flipper Length (mm)", color = "Species") +
+  theme(legend.position = "bottom")
+
+# Scatterplot: Bill Depth vs. Flipper Length (Colored by Sex)
+p8 <- ggplot(penguins, aes(x = bill_depth_mm, y = flipper_length_mm, color = sex)) +
+  geom_point() +
+  labs(x = "Bill Depth (mm)", y = "Flipper Length (mm)", color = "Sex") +
+  theme(legend.position = "bottom")
+
+(p7 | p8) + plot_annotation(title = "Bill Depth vs. Flipper Length")
+```
+
+## Bill Depth vs. Body Mass
+
+```{r}
+# Scatterplot: Bill Depth vs. Body Mass (Colored by Species)
+p9 <- ggplot(penguins, aes(x = bill_depth_mm, y = body_mass_g, color = species)) +
+  geom_point() +
+  labs(x = "Bill Depth (mm)", y = "Body Mass (g)", color = "Species") +
+  theme(legend.position = "bottom")
+
+# Scatterplot: Bill Depth vs. Body Mass (Colored by Sex)
+p10 <- ggplot(penguins, aes(x = bill_depth_mm, y = body_mass_g, color = sex)) +
+  geom_point() +
+  labs(x = "Bill Depth (mm)", y = "Body Mass (g)", color = "Sex") +
+  theme(legend.position = "bottom")
+
+(p9 | p10) + plot_annotation(title = "Bill Depth vs. Body Mass")
+```
+
+## Flipper Length vs. Body Mass
+
+```{r}
+# Scatterplot: Flipper Length vs. Body Mass (Colored by Species)
+p11 <- ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+  geom_point() +
+  labs(x = "Flipper Length (mm)", y = "Body Mass (g)", color = "Species") +
+  theme(legend.position = "bottom")
+
+# Scatterplot: Flipper Length vs. Body Mass (Colored by Sex)
+p12 <- ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = sex)) +
+  geom_point() +
+  labs(x = "Flipper Length (mm)", y = "Body Mass (g)", color = "Sex") +
+  theme(legend.position = "bottom")
+
+(p11 | p12) + plot_annotation(title = "Flipper Length vs. Body Mass")
+```
