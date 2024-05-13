@@ -22,15 +22,30 @@ This part provides an overview of the R programming language and introduce the b
 
 1. Installing R and RStudio + Elements of R: working with strings, numbers, and operators
   - Introduction to R and RStudio
-  - R scripts and Rmarkdown files
+  - How to run R code in the Console
+  - Persist code in R scripts and run them
+  - Literate programming in RMarkdown files
   - Setting up your R environment (installing packages, setting working directory, etc.)
   - R syntax basics (comments, variables, data types, operators)
   - Using R as a calculator (basic arithmetic, logical operations, comparison operators)
+  - Basic data types: strings
+  - Define your own functions
+  - R built-in functions for data manipulation (sum, mean, max, min, etc.)
 
 2. Vectors, Matrices, and DataFrames + Introduction to statistical computations
-  - Creating and working with objects (vectors, matrices, data frames)
-  - Work with vectors, matrices, and arrays in R, as well as how to index and perform operations on them.
+  - Creating and working with vectors
   - Creating and accessing subsets of data in R (indexing, slicing)
-  - R built-in functions for data manipulation (sum, mean, max, min, etc.)
-  - Introduction to functions in R (defining, calling, arguments, return values)
+  - Apply functions to vectors
+  - Sample from random variables
+  - `data.frame`s introduction
+  - `factor` datatypes.
+  - Introduction to the `{tidyverse}` and `tibble`s.
+  - Introduction to exploratory data analysis and data visualisation with `{ggplot2}`
+
+Appendices:
+  - Matrices and Lists, as well as how to index and perform operations on them.
   - Control structures in R (if-else statements, loops)
+  - Elements of the `{tidyverse}`:
+    - Plotting with `{ggplot2}`
+    - Data manipulation with `{dplyr}`
+    - The pipe operator
