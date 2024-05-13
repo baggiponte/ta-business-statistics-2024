@@ -9,14 +9,15 @@ editor_options:
 
 This lecture is an introduction to the following:
 
-1. How to install R and RStudio.
-2. How to create a `Project`.
-3. What's inside the RStudio environment (IDE).
-4. Fundamentals of programming:
-  * Types
-  * Operations
-  * Variable assignment
-  * Functions and how to define them
+1.  How to install R and RStudio.
+2.  How to create a `Project`.
+3.  What's inside the RStudio environment (IDE).
+4.  Fundamentals of programming:
+
+-   Types
+-   Operations
+-   Variable assignment
+-   Functions and how to define them
 
 # The R Console
 
@@ -89,46 +90,51 @@ However, the console has some limitations. For example, it's difficult to keep t
 
 R Scripts are plain text files that contain a series of R commands. We can create R Scripts using any text editor, such as Notepad or TextEdit, or directly within RStudio using the built-in text editor. R Scripts allow us to save and re-run our code, making it easier to reproduce our analysis and share our work with others.
 
-To create a new R Script in RStudio, click on File -> New File -> R Script, or use the keyboard shortcut `Ctrl + Shift + N` (Windows) or `Cmd + Shift + N` (Mac). This will open a new text editor pane in RStudio where we can write our code.
+To create a new R Script in RStudio, click on File -\> New File -\> R Script, or use the keyboard shortcut `Ctrl + Shift + N` (Windows) or `Cmd + Shift + N` (Mac). This will open a new text editor pane in RStudio where we can write our code.
 
 ## R Markdown Files
 
 R Markdown is a file format that allows us to combine text, code, and output in a single document. R Markdown files can be used to create dynamic reports, presentations, and websites that are fully reproducible and easily shareable. R Markdown files are created using a combination of markdown (a simple markup language for formatting text) and R code.
 
-To create a new R Markdown file in RStudio, click on File -> New File -> R Markdown, or use the keyboard shortcut `Ctrl + Shift + Alt + R` (Windows) or `Cmd + Shift + Option + R` (Mac). This will open a new R Markdown document in the RStudio text editor, where we can write our text and embed R code using special code chunks.
+To create a new R Markdown file in RStudio, click on File -\> New File -\> R Markdown, or use the keyboard shortcut `Ctrl + Shift + Alt + R` (Windows) or `Cmd + Shift + Option + R` (Mac). This will open a new R Markdown document in the RStudio text editor, where we can write our text and embed R code using special code chunks.
 
 # Basic types in R
 
 In R, there are five basic (non-sequence) data types: numeric, integer, complex, logical, and character.
 
-1. **Numeric**: Numeric data types represent both integer and floating-point numbers. Numeric values are the default type of number in R, so you don't need to specify a type when creating a numeric variable. For example:
+1.  **Numeric**: Numeric data types represent both integer and floating-point numbers. Numeric values are the default type of number in R, so you don't need to specify a type when creating a numeric variable. For example:
+
 ```{r}
 x <- 10.5
 y <- 2
 ```
 
-2. **Integer**: Integer data types represent whole numbers without decimal places. You can specify an integer type by adding an 'L' to the end of a number. For example:
+2.  **Integer**: Integer data types represent whole numbers without decimal places. You can specify an integer type by adding an 'L' to the end of a number. For example:
+
 ```{r}
 x <- 10L
 y <- 2L
 ```
 
-3. **Complex**: Complex data types are quite rare. They represent numbers with both real and imaginary components. You can specify a complex number by adding an 'i' to the end of a number or by using the `complex()` function. For example:
+3.  **Complex**: Complex data types are quite rare. They represent numbers with both real and imaginary components. You can specify a complex number by adding an 'i' to the end of a number or by using the `complex()` function. For example:
+
 ```{r}
 x <- 3 + 4i
 y <- complex(real = 3, imaginary = 4)
 ```
 
-4. **Logical**: Logical data types in R represent binary values, which can be either `TRUE` or `FALSE`. Logical values are often used for making comparisons and conditional statements. For example:
+4.  **Logical**: Logical data types in R represent binary values, which can be either `TRUE` or `FALSE`. Logical values are often used for making comparisons and conditional statements. For example:
+
 ```{r}
 x <- TRUE
 y <- FALSE
 ```
 
-5. **Character**: Character data types in R represent strings of text. You can create a character variable by enclosing text in either single or double quotes. For example:
+5.  **Character**: Character data types in R represent strings of text. You can create a character variable by enclosing text in either single or double quotes. For example:
+
 ```{r}
 x <- "Hello, world!"
-y <- 'R is awesome!'
+y <- "R is awesome!"
 ```
 
 It's important to note that R is a dynamically typed language, which means that variables can change type depending on their context. For example, you can convert a numeric value to a character value by using the `as.character()` function:
@@ -149,33 +155,13 @@ y <- as.numeric(x)
 
 R supports a variety of basic arithmetic and logical operators, which are used to perform mathematical and boolean operations on data. Here are some of the most common operators in R:
 
-Arithmetic Operators:
-- `+`: Addition.
-- `-`: Subtraction.
-- `*`: Multiplication.
-- `/`: Division.
-- `^`: Exponentiation.
-- `%%`: Modulo (returns the remainder of a division operation).
-- `%/%`: Integer division (returns the quotient of a division operation).
+Arithmetic Operators: - `+`: Addition. - `-`: Subtraction. - `*`: Multiplication. - `/`: Division. - `^`: Exponentiation. - `%%`: Modulo (returns the remainder of a division operation). - `%/%`: Integer division (returns the quotient of a division operation).
 
-Comparison Operators:
-- `>`: Greater than.
-- `<`: Less than.
-- `>=`: Greater than or equal to.
-- `<=`: Less than or equal to.
-- `==`: Equal to.
-- `!=`: Not equal to.
+Comparison Operators: - `>`: Greater than. - `<`: Less than. - `>=`: Greater than or equal to. - `<=`: Less than or equal to. - `==`: Equal to. - `!=`: Not equal to.
 
-Logical Operators:
-- `!`: Negation (flips the truth value of a logical expression).
-- `&`: Logical AND (returns TRUE if both operands are TRUE).
-- `|`: Logical OR (returns TRUE if at least one operand is TRUE).
-- `xor()`: Exclusive OR (returns TRUE if only one operand is TRUE).
-- `isTRUE()`: Returns TRUE if the argument is TRUE, and FALSE otherwise.
+Logical Operators: - `!`: Negation (flips the truth value of a logical expression). - `&`: Logical AND (returns TRUE if both operands are TRUE). - `|`: Logical OR (returns TRUE if at least one operand is TRUE). - `xor()`: Exclusive OR (returns TRUE if only one operand is TRUE). - `isTRUE()`: Returns TRUE if the argument is TRUE, and FALSE otherwise.
 
-Assignment Operators:
-- `<-` or `=`: Assigns a value to a variable.
-- `<<-`: Assigns a value to a variable in the global environment. This is rarely used.
+Assignment Operators: - `<-` or `=`: Assigns a value to a variable. - `<<-`: Assigns a value to a variable in the global environment. This is rarely used.
 
 These are just a few of the basic operators in R. There are many more operators available for performing complex operations and transformations on data.
 
@@ -187,8 +173,8 @@ Functions are useful because they allow you to encapsulate a block of code that 
 
 In R, functions are defined using the `function` keyword, followed by:
 
-1. the name of the function and
-2. a list of arguments in parentheses.
+1.  the name of the function and
+2.  a list of arguments in parentheses.
 
 The body of the function is enclosed in curly braces `{}` and contains the code that performs the task.
 
@@ -210,26 +196,26 @@ In this example, the `circle_area` function takes one argument, `radius`, which 
 
 # Exercises
 
-1. Write a function called `add_numbers` that takes two numeric arguments and returns their sum.
+1.  Write a function called `add_numbers` that takes two numeric arguments and returns their sum.
 
-2. Write a function called `greet_person` that takes a character string argument representing a person's name and returns a greeting message that includes the person's name. *Hint*: to concatenate strings, you should use the `paste0() function.` If you are unsure about how to use it, try to run this command in the console:
+2.  Write a function called `greet_person` that takes a character string argument representing a person's name and returns a greeting message that includes the person's name. *Hint*: to concatenate strings, you should use the `paste0() function.` If you are unsure about how to use it, try to run this command in the console:
 
-```r
+``` r
 help(paste0)
 
 # or, equivalently
 ?paste0
 ```
 
-3. Write a function called `calculate_average` that takes a vector of numeric values as an argument and returns the average of those values. *Hint*: use the `mean()` function.
+3.  Write a function called `calculate_average` that takes a vector of numeric values as an argument and returns the average of those values. *Hint*: use the `mean()` function.
 
-4. Write a function called `count_characters` that takes a character string argument and returns the number of characters in the string. *Hint*: use the `nchars()` function.
+4.  Write a function called `count_characters` that takes a character string argument and returns the number of characters in the string. *Hint*: use the `nchars()` function.
 
-5. Write a function called `check_odd` that takes a numeric argument and returns TRUE if the number is odd and FALSE if it is even. *Hint*: remember that every comparison (i.e. using `==`, `>=`, etc) returns a boolean.
+5.  Write a function called `check_odd` that takes a numeric argument and returns TRUE if the number is odd and FALSE if it is even. *Hint*: remember that every comparison (i.e. using `==`, `>=`, etc) returns a boolean.
 
 # Solutions
 
-1. Solution to `add_numbers` function:
+1.  Solution to `add_numbers` function:
 
 ```{r}
 add_numbers <- function(x, y) {
@@ -237,7 +223,7 @@ add_numbers <- function(x, y) {
 }
 ```
 
-2. Solution to `greet_person` function:
+2.  Solution to `greet_person` function:
 
 ```{r}
 greet_person <- function(name) {
@@ -245,7 +231,7 @@ greet_person <- function(name) {
 }
 ```
 
-3. Solution to `calculate_average` function:
+3.  Solution to `calculate_average` function:
 
 ```{r}
 calculate_average <- function(values) {
@@ -253,7 +239,7 @@ calculate_average <- function(values) {
 }
 ```
 
-4. Solution to `count_characters` function:
+4.  Solution to `count_characters` function:
 
 ```{r}
 count_characters <- function(string) {
@@ -261,7 +247,7 @@ count_characters <- function(string) {
 }
 ```
 
-5. Solution to `check_odd` function:
+5.  Solution to `check_odd` function:
 
 ```{r}
 check_odd <- function(number) {

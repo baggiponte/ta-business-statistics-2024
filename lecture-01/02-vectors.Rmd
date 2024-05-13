@@ -9,14 +9,14 @@ editor_options:
 
 This lecture covers the following:
 
-1. Sequence types: vectors and matrices, vs lists and dataframes.
-2. How to access elements in sequences.
-3. A brief overview of matrices.
-4. Sampling from random distributions and computing summary statistics.
+1.  Sequence types: vectors and matrices, vs lists and dataframes.
+2.  How to access elements in sequences.
+3.  A brief overview of matrices.
+4.  Sampling from random distributions and computing summary statistics.
 
 # References
 
-* Installing [R and R Studio](https://rstudio-education.github.io/hopr/starting.html#rstudio).
+-   Installing [R and R Studio](https://rstudio-education.github.io/hopr/starting.html#rstudio).
 
 # Introduction to Sequence Types
 
@@ -24,7 +24,7 @@ The three main sequence types you are going to encounter are vectors, lists, mat
 
 Vectors and matrices are **homogeneous**, which means they contain objects of the same type. Lists and dataframes are the opposites, i.e. they are **heterogeneous**. Lists are a bit peculiar, and we will not cover them today. We will also discuss dataframes more thoroughly in the second lecture. Here are some examples of vectors, matrices and dataframes:
 
-1. **Vectors** - Vectors are one-dimensional arrays that can hold a collection of values of the same data type. Here's an example of how to create a vector in R:
+1.  **Vectors** - Vectors are one-dimensional arrays that can hold a collection of values of the same data type. Here's an example of how to create a vector in R:
 
 ```{r}
 # Create a numeric vector
@@ -34,14 +34,14 @@ numeric_vector <- c(1, 2, 3, 4, 5)
 character_vector <- c("red", "green", "blue")
 ```
 
-2. **Matrices** - Matrices are two-dimensional arrays that can hold a collection of values of the same data type. Here's an example of how to create a matrix in R:
+2.  **Matrices** - Matrices are two-dimensional arrays that can hold a collection of values of the same data type. Here's an example of how to create a matrix in R:
 
 ```{r}
 # Create a matrix with 3 rows and 2 columns
 matrix_data <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, ncol = 2)
 ```
 
-3. **Data frames** - Data frames are two-dimensional structures that can hold a collection of values of different data types. Here's an example of how to create a data frame in R:
+3.  **Data frames** - Data frames are two-dimensional structures that can hold a collection of values of different data types. Here's an example of how to create a data frame in R:
 
 ```{r}
 # Create a data frame with 3 rows and 2 columns
@@ -54,13 +54,14 @@ data_frame <- data.frame(name = c("John", "Mary", "Bob"),
 In R, a vector is a basic data structure that holds elements of the same data type, such as numeric, character, or logical values. Vectors are essential in R programming because they form the foundation for more complex data structures like matrices, data frames, and lists. You can create a vector using the `c()` function, which stands for "combine" or "concatenate."
 
 Here's a brief example of creating a numeric vector:
+
 ```{r}
 numeric_vector <- c(1, 2, 3, 4, 5)
 ```
 
 We can operate on vectors in the same way we did with atomic data types:
 
-1. **Mathematical functions:**
+1.  **Mathematical functions:**
 
 You can use mathematical functions like `sqrt()`, `exp()`, and `log()` to perform calculations on each element of a numeric vector.
 
@@ -72,7 +73,7 @@ exponential <- exp(numeric_vector)
 natural_log <- log(numeric_vector)
 ```
 
-1. **Summary statistics functions:**
+1.  **Summary statistics functions:**
 
 You can use functions like `mean()`, `median()`, `min()`, `max()`, and `sum()` to calculate summary statistics for a numeric vector.
 
@@ -86,7 +87,7 @@ max_value <- max(numeric_vector)
 total_sum <- sum(numeric_vector)
 ```
 
-1. **String functions:**
+1.  **String functions:**
 
 You can use string functions like `toupper()`, `tolower()`, `nchar()`, and `substr()` to manipulate character vectors.
 
@@ -105,7 +106,7 @@ When we start reasoning about sequences, we need to know how to access some of i
 
 There are two primary ways to index a vector in R:
 
-1. **Positive indexing:** This method allows you to select elements by their positions. For example, if you want to access the third element of a vector, you can use the following syntax:
+1.  **Positive indexing:** This method allows you to select elements by their positions. For example, if you want to access the third element of a vector, you can use the following syntax:
 
 ```{r}
 vector_name[3]
@@ -117,7 +118,7 @@ You can also select multiple elements by specifying a vector of positions:
 vector_name[c(1, 3, 5)]
 ```
 
-1. **Logical indexing:** This method allows you to select elements based on a logical condition. For example, if you want to access all elements greater than a specific value, you can use the following syntax:
+1.  **Logical indexing:** This method allows you to select elements based on a logical condition. For example, if you want to access all elements greater than a specific value, you can use the following syntax:
 
 ```{r}
 vector_name[vector_name > value]
@@ -159,8 +160,8 @@ logical_vector <- c(TRUE, FALSE, TRUE, FALSE, TRUE)
 
 Create a numeric vector containing the ages of 10 individuals. Then, perform the following tasks:
 
-a. Access the 3rd and 7th elements of the vector.
-b. Calculate the mean, median, and standard deviation of the vector.
+a.  Access the 3rd and 7th elements of the vector.
+b.  Calculate the mean, median, and standard deviation of the vector.
 
 **Solution:**
 
@@ -305,52 +306,52 @@ rbeta(250, shape1 = 1, shape2 = 3)
 
 ## Exercises
 
-1. **Exercise:** Generate a sample of 100 observations from a normal distribution with mean 50 and standard deviation 10. Compute the sample mean and sample standard deviation.
+1.  **Exercise:** Generate a sample of 100 observations from a normal distribution with mean 50 and standard deviation 10. Compute the sample mean and sample standard deviation.
 
- **Solution:**
+**Solution:**
 
- ```{r}
- set.seed(123) # for reproducibility
- sample <- rnorm(100, mean = 50, sd = 10)
- sample_mean <- mean(sample)
- sample_sd <- sd(sample)
- ```
+```{r}
+set.seed(123) # for reproducibility
+sample <- rnorm(100, mean = 50, sd = 10)
+sample_mean <- mean(sample)
+sample_sd <- sd(sample)
+```
 
-2. **Exercise:** Generate a sample of 500 observations from an exponential distribution with rate parameter 2. Compute the sample median and sample interquartile range (IQR).
+2.  **Exercise:** Generate a sample of 500 observations from an exponential distribution with rate parameter 2. Compute the sample median and sample interquartile range (IQR).
 
- **Solution:**
+**Solution:**
 
- ```{r}
- set.seed(456) # for reproducibility
- sample <- rexp(500, rate = 2)
- sample_median <- median(sample)
- sample_iqr <- IQR(sample)
- ```
+```{r}
+set.seed(456) # for reproducibility
+sample <- rexp(500, rate = 2)
+sample_median <- median(sample)
+sample_iqr <- IQR(sample)
+```
 
-3. **Exercise:** Generate a sample of 1000 observations from a uniform distribution on the interval [0, 100]. Compute the sample variance.
+3.  **Exercise:** Generate a sample of 1000 observations from a uniform distribution on the interval [0, 100]. Compute the sample variance.
 
- **Solution:**
+**Solution:**
 
- ```{r}
- set.seed(789) # for reproducibility
- sample <- runif(1000, min = 0, max = 100)
- sample_variance <- var(sample)
- ```
+```{r}
+set.seed(789) # for reproducibility
+sample <- runif(1000, min = 0, max = 100)
+sample_variance <- var(sample)
+```
 
-4. **Exercise:** Generate a sample of 200 observations from a Poisson distribution with lambda = 5. Compute the sample skewness and sample kurtosis. *Note*: this exercise requires installing a library, named `{moments}`. Feel free to skip it.
+4.  **Exercise:** Generate a sample of 200 observations from a Poisson distribution with lambda = 5. Compute the sample skewness and sample kurtosis. *Note*: this exercise requires installing a library, named `{moments}`. Feel free to skip it.
 
- **Solution:**
+**Solution:**
 
- ```{r}
- set.seed(111) # for reproducibility
- sample <- rpois(200, lambda = 5)
+```{r}
+set.seed(111) # for reproducibility
+sample <- rpois(200, lambda = 5)
 
- library(moments) # for skewness and kurtosis functions
- sample_skewness <- skewness(sample)
- sample_kurtosis <- kurtosis(sample)
- ```
+library(moments) # for skewness and kurtosis functions
+sample_skewness <- skewness(sample)
+sample_kurtosis <- kurtosis(sample)
+```
 
-5. **Exercise:** Generate a sample of 1000 observations from a standard normal distribution (mean = 0, standard deviation = 1). Calculate the sample's 1st quartile (25th percentile), median (50th percentile), and 3rd quartile (75th percentile). Also, find the 95th percentile of the sample.
+5.  **Exercise:** Generate a sample of 1000 observations from a standard normal distribution (mean = 0, standard deviation = 1). Calculate the sample's 1st quartile (25th percentile), median (50th percentile), and 3rd quartile (75th percentile). Also, find the 95th percentile of the sample.
 
 **Solution:**
 

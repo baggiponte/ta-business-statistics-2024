@@ -121,7 +121,7 @@ The resulting named vector is displayed as `A  B  C  D  E`, with each element as
 ```{r}
 my_vector["A"]
 
-my_vector[c("A","C")]
+my_vector[c("A", "C")]
 ```
 
 **Example 3: Naming a Vector by Indexing:**
@@ -244,11 +244,11 @@ To index a matrix using its row and column names, you can use the names within s
 
 ```{r}
 # Accessing elements using row and column names
-my_matrix["Row1", "Col2"]  # Access the element in the first row and second column
+my_matrix["Row1", "Col2"] # Access the element in the first row and second column
 
 # Accessing entire rows or columns using names
-my_matrix["Row2", ]  # Access the second row
-my_matrix[, "Col3"]  # Access the third column
+my_matrix["Row2", ] # Access the second row
+my_matrix[, "Col3"] # Access the third column
 ```
 
 By setting names for the rows and columns of a matrix, you can easily refer to specific elements using the names instead of numerical indices. This can make your code more readable and easier to understand when working with matrices in R.
@@ -300,9 +300,9 @@ The `$` operator is used to access components within a list by specifying the co
 my_list <- list(name = "John", age = 30, hobbies = c("reading", "painting"))
 
 # Accessing components using $
-my_list$name     # Access the component named "name"
-my_list$age      # Access the component named "age"
-my_list$hobbies  # Access the component named "hobbies"
+my_list$name # Access the component named "name"
+my_list$age # Access the component named "age"
+my_list$hobbies # Access the component named "hobbies"
 ```
 
 The `$` operator is straightforward to use and provides direct access to components by their names. It is especially useful when working with named lists.
@@ -313,10 +313,10 @@ The single bracket `[ ]` operator is used for both subsetting and indexing. It c
 
 ```{r}
 # Accessing components using [ ]
-my_list[1]             # Access the first component as a sub-list
-my_list[c(1, 3)]       # Access the first and third components as a sub-list
-my_list["name"]        # Access the component named "name" directly
-my_list[c("name", "age")]  # Access components by their names as a sub-list
+my_list[1] # Access the first component as a sub-list
+my_list[c(1, 3)] # Access the first and third components as a sub-list
+my_list["name"] # Access the component named "name" directly
+my_list[c("name", "age")] # Access components by their names as a sub-list
 ```
 
 The `[ ]` operator provides more flexibility as it allows you to access components or elements based on their position or name. It returns a list or vector depending on the indexing method used.
@@ -327,9 +327,9 @@ The double brackets `[[ ]]` operator is used for extracting a single component o
 
 ```{r}
 # Accessing components using [[ ]]
-my_list[[1]]           # Access the first component directly
-my_list[["name"]]      # Access the component named "name" directly
-my_list$hobbies[[2]]   # Access the second element within the "hobbies" component directly
+my_list[[1]] # Access the first component directly
+my_list[["name"]] # Access the component named "name" directly
+my_list$hobbies[[2]] # Access the second element within the "hobbies" component directly
 ```
 
 The `[[ ]]` operator is handy when you need to access a specific component or element within a list and want the value itself rather than a sub-list or sub-vector.
@@ -341,23 +341,23 @@ To summarize, the `$` operator is used to access components by their names, the 
 my_list <- list(name = "John", age = 30, hobbies = c("reading", "painting"))
 
 # Accessing single components
-my_list$name  # Access the component named "name"
-my_list[2]    # Access the second component
+my_list$name # Access the component named "name"
+my_list[2] # Access the second component
 
 # Accessing components using $
-my_list$name  # Access the component named "name"
-my_list$age   # Access the component named "age"
+my_list$name # Access the component named "name"
+my_list$age # Access the component named "age"
 
 # Accessing components using [[ ]]
-my_list[["name"]]      # Access the component named "name"
-my_list[["hobbies"]]   # Access the component named "hobbies"
+my_list[["name"]] # Access the component named "name"
+my_list[["hobbies"]] # Access the component named "hobbies"
 
 # Accessing components using $
-my_list[[1]]  # Access the first component
-my_list[[3]]  # Access the third component
+my_list[[1]] # Access the first component
+my_list[[3]] # Access the third component
 
 # Accessing elements within components
-my_list$hobbies[2]     # Access the second element within the "hobbies" component
+my_list$hobbies[2] # Access the second element within the "hobbies" component
 my_list[["hobbies"]][1] # Access the first element within the "hobbies" component
 ```
 
@@ -416,16 +416,16 @@ In this example, we create three vectors: `names`, `age`, and `city`. We then us
 
 ```{r}
 # Accessing columns
-df$Name     # Access the column "Name"
+df$Name # Access the column "Name"
 df[, "Age"] # Access the column "Age"
 
 # Accessing rows
-df[2, ]     # Access the second row
-df[1:2, ]   # Access the first two rows
+df[2, ] # Access the second row
+df[1:2, ] # Access the first two rows
 
 # Accessing specific elements
-df[2, "Name"]   # Access the element in the second row and "Name" column
-df$Age[3]      # Access the element in the third row of the "Age" column
+df[2, "Name"] # Access the element in the second row and "Name" column
+df$Age[3] # Access the element in the third row of the "Age" column
 ```
 
 You can access columns by using the `$` operator followed by the column name or by using the `[ ]` operator with the column name inside quotes. To access rows, you can use the `[ ]` operator with numerical indices or leave the column index empty to select all columns. Furthermore, you can access specific elements by combining indexing techniques.
