@@ -54,7 +54,7 @@ For loops allow you to repeat a block of code a certain number of times. Here's 
 # define a function to print the first n even numbers
 print_even_numbers <- function(n) {
   for (i in 1:n) {
-    print(2*i)
+    print(2 * i)
   }
 }
 
@@ -257,4 +257,3 @@ even_sum <- function(A, B) {
   return(result)
 }
 ```
-
