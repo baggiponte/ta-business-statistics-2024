@@ -1,0 +1,100 @@
+---
+title: "Cluster Analysis - DBSCAN"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
+# Lecture outline
+
+This second part presents the DBSCAN algorithm:
+
+1. Its key assumptions.
+2. An intuition of how it is implemented.
+3. A pratical example.
+
+# Required Libraries
+
+```{r setup, echo=FALSE, warning=FALSE}
+# data
+library(palmerpenguins)
+
+# data manipulation
+library(tidyverse)
+library(patchwork) # just an extra
+
+theme_set(theme_minimal()) # use a decent theme
+
+# clustering
+library(dbscan)
+library(factoextra) # viz and cluster selection
+
+set.seed(42) # reproducibility
+```
+# Assumptions of DBSCAN
+
+The DBSCAN algorithm views clusters as areas of high density separated by areas of low density. Due to this rather generic view, clusters found by DBSCAN can be any shape, as opposed to k-means which assumes that clusters are convex shaped. To be more formal, DBSCAN is a density-based clustering algorithm.
+
+This means that the algorithm is not concerned with the shape of the clusters: they can be of any shape and have uneven variance (i.e. can be elongated). The algorithm can find small as well as large clusters.
+
+# Implementation
+
+The DBSCAN algorithm has two main hyperparameters:
+
+1. `epsilon`: the maximum distance between two points to be considered as part of the same cluster.
+2. `min_samples`: the minimum number of points required to form a cluster.
+
+The idea is the following. `epsilon` represents the radius of a circle. For every point in the dataset, we draw a circle of radius `epsilon` around it and we count the number of neighbors that fall within this circle. If the number of neighbors is greater than `min_samples`, we consider the point to be part of the same cluster, i.e. a `core` point. If there are less, that becomes a `border` point. Finally, if there are none, then the point is an outlier.
+
+The `epsilon` parameter is key: too small, and every point is considered noise. Too large, and you end up with a single cluster. A heuristic was proposed in the literature. The idea is to look for the knee in the kNN distance plot. In other words:
+
+1. The user sets a `min_points` parameter.
+2. Then, computes the kNN distance matrix. This means that the distance between every point and its closest `min_points` - 1 is computed.
+3. Sort the distances computed in this way and plot them. Where you find a knee, that denotes approximately the `epsilon` parameter.
+
+# Example
+
+```{r}
+data <- penguins %>%
+  drop_na() %>%
+  select(where(is.numeric), -year) %>%
+  scale() %>%
+  as_tibble()
+
+kNNdistplot(data, k = 3)
+abline(h = .8, col = "red")
+```
+
+Given `k = 3`, the knee is around 0.8.
+
+```{r}
+db <- dbscan(data, eps = .82, minPts = 4)
+db
+```
+
+```{r}
+data |> 
+  add_column(cluster = factor(db$cluster)) |> 
+  ggplot(aes(bill_length_mm, bill_depth_mm, color=cluster)) +
+  geom_point()
+```
+
+```{r}
+fviz_cluster(db, data, geom="point")
+```
+
+```{r}
+hdb <- data |> hdbscan(minPts = 4)
+hdb
+```
+
+```{r}
+data |>
+  add_column(cluster = factor(hdb$cluster)) |> 
+  ggplot(aes(bill_length_mm, bill_depth_mm, color=cluster)) +
+  geom_point()
+```
+
+# References
+
+* [1](https://mhahsler.github.io/Introduction_to_Data_Mining_R_Examples/book/clustering-analysis.html#density-based-clustering-with-dbscan)
