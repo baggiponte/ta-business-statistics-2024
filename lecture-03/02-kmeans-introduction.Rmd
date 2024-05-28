@@ -70,6 +70,14 @@ by_species + by_island +
   theme(legend.position = "bottom")
 ```
 
+# The K-Means algorithm
+
+The k-means algorithm is a popular clustering technique that aims to partition a set of data into a predefined number of clusters. It works by iteratively assigning each data point to the nearest cluster centroid and updating the centroids based on the mean of the data points assigned to each cluster.
+
+The algorithm starts by randomly selecting `k` initial centroids, where `k` is the number of clusters we want to create. Then, for each data point, the algorithm calculates the distance between the data point and each centroid, and assigns the data point to the cluster with the nearest centroid. The algorithm then updates the centroids by taking the mean of the data points assigned to each cluster.
+
+The algorithm continues this process until the centroids no longer change significantly, indicating that the clusters have stabilized. Here are some visual explanations: [1](https://www.youtube.com/watch?v=R2e3Ls9H_fc) and [2](https://www.youtube.com/watch?v=4b5d3muPQmA)
+
 # Data Preparation
 
 Before applying K-Means clustering, two preprocessing steps are necessary: dealing with categorical columns and scaling data. We will offer a brief mention of how to deal with categorical variables as an appendix of the next lecture.
