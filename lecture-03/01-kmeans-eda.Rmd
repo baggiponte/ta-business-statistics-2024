@@ -1,5 +1,5 @@
 ---
-title: "Introduction to Exploratory Data Analysis with `{palmerpenguins}`"
+title: "Multivariate Data Analysis with `{palmerpenguins}`"
 output: html_notebook
 editor_options:
   chunk_output_type: console
