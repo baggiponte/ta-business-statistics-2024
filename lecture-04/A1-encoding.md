@@ -1,0 +1,31 @@
+# Appendix 1: Categorical variables encoding
+
+K-Means clustering algorithm is primarily designed to work with quantitative variables rather than categorical variables. The algorithm calculates distances between data points based on numerical values, making it less suitable for categorical data. However, there are ways to convert categorical variables into numerical ones to use K-Means clustering, though it comes with some caveats.
+
+- Loss of Information: Converting categorical variables into numerical ones involves assigning arbitrary numerical codes or dummy variables. This process may result in the loss of the inherent order or relationships between categories.
+- Incorrect Interpretation: Numeric codes assigned to categorical variables can lead to a misleading interpretation. K-Means assumes a linear relationship between variables, which may not hold true for categorical variables.
+- Distorted Distance Metrics: Converting categorical variables into numerical ones may create artificial distances that do not reflect the true dissimilarity between categories. This can lead to biased clustering results.
+
+Let's make a concrete example. We could encode the penguin species as a dummy variable, by mapping Gentoo to 0, Adelie to 1 and Chinstrap to 2. This, however, makes some crucial assumptions:
+
+* Ordering: with this encoding, we are saying that there is an order between species that might not respect the true order - or there might be no order at all.
+* Cardinality: even if the order is correct, the distance between points is always 1. This does not always hold. In time series data, we might encode the day of the week with a sequence from 0 to 6, or the month as a sequence from 0 to 11: while this is indeed the correct order, no one guarantees that the distance between each point is 1. For example, the distance between a Friday and a Saturday is not the same as Sunday and Monday, or Tuesday and Wednesday.
+
+## Handling categorical variables: dummy coding
+
+Dummy coding creates binary dummy variables for each category of the categorical variable. Each category is represented by a 0 or 1, indicating its absence or presence, respectively. However, this can lead to a high-dimensional feature space and the "curse of dimensionality" problem.
+
+With dummy coding (also known as one-hot encoding), a categorical column with K levels becomes K-1 columns that contain a 0 or 1. When K is big, this can make the feature space too sparse.
+
+For example, sometimes in time series analysis we can consider the day of the week and the month as categorical features. One-hot encoding the day of the week returns 6 columns, while encoding the month will return 11 columns. In we did so, we would add 17 columns to our dataset.
+
+## Ordinal Encoding
+
+Ordinal encoding assigns numerical codes to categories based on their order or meaningful ranking. This method preserves the order or ranking information but assumes equal intervals between categories. In other words, a "day of the week" column becomes a single column ranging from 0 to 6.
+
+### Other strategies
+
+- Frequency Encoding. Replace categories with their frequency of occurrence in the dataset. This approach captures the relative importance of each category but treats them as continuous variables.
+- Target Encoding. Encode categories based on the target variable's mean or other statistics. This method introduces the target variable's information into the encoding process but can be prone to overfitting.
+
+It's important to note that even with these approaches, the resulting numerical representation of categorical variables may not fully capture the true nature of the data. Other clustering algorithms, such as k-modes or k-prototypes, are specifically designed for categorical data and may provide better results for clustering categorical variables.
