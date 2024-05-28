@@ -1,0 +1,214 @@
+---
+title: "Cluster Analysis - K-Means overview"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
+# Lecture outline
+
+This second part of the lecture introduces the k-means clustering algorithm with a visual approach, focusing on the intuition behind the algorithm and how data separation happens.
+
+In the next lecture, we shall cover the assumptions behind the model, the necessary data preprocessing steps, and the diagnostics metrics we can rely upon to interpret the goodness of fit.
+
+# Import libraries
+
+The k-means algorithm is already implemented in base R. We will install `{cluster}`, `{factoextra}` and `{fpc}` packages to display advanced functionalities and visualisations.
+
+```{r setup, echo=FALSE, warning=FALSE}
+# data
+library(palmerpenguins)
+
+# data manipulation
+library(tidyverse)
+library(patchwork) # just an extra
+
+theme_set(theme_minimal()) # use a decent theme
+
+# clustering
+library(cluster) # for silhouette
+library(factoextra) # viz and cluster selection
+
+set.seed(42) # to ensure we obtain the same results when we re-run the code
+```
+
+# Exploratory data analysis
+
+Here are a few more plots to explore the data.
+
+```{r eda-facet}
+penguins %>%
+  ggplot(aes(x = bill_length_mm, y = bill_depth_mm, col = sex, alpha = body_mass_g)) +
+  geom_point() +
+  facet_grid(vars(island), vars(species)) +
+  theme(legend.position = "bottom")
+```
+
+Note the usage of `facet_grid` to display the data by both `island` and `species`.
+
+Here we also plot the data by `island` and `species`. We use colour to represent sex and alpha to represent body mass, and display the plots side by side with `{patchwork}`.
+
+```{r eda-patchwork}
+by_species <- penguins %>%
+  ggplot(aes(x = bill_length_mm, y = bill_depth_mm, col = sex, alpha = body_mass_g)) +
+  geom_point() +
+  facet_wrap(vars(species)) +
+  labs(x = NULL, y = NULL)
+
+by_island <- penguins %>%
+  ggplot(aes(x = bill_length_mm, y = bill_depth_mm, col = sex, alpha = body_mass_g)) +
+  geom_point() +
+  facet_wrap(vars(island)) +
+  labs(x = NULL, y = NULL)
+
+by_species + by_island +
+  plot_annotation(
+    title = "Penguins: Bill Length vs Bill Depth",
+    subtitle = "By species (left) and by island (right)",
+  ) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+# Data Preparation
+
+Before applying K-Means clustering, two preprocessing steps are necessary: dealing with categorical columns and scaling data. We will offer a brief mention of how to deal with categorical variables as an appendix of the next lecture.
+
+1. Scaling data is a crucial step. Since clustering algorithms like k-means are distance-based, they require the data to be on a similar scale. If you look at the data, you will realise that the body mass of a penguin is in the range of the thousands; while other variables like the bill length are in the hundreds. If we did not scale the data, our clustering model will only capture the variation in the body mass, losing sight of useful information that could be used to segment the penguins.
+2. We also drop all categorical variables.
+3. We also remove missing values.
+
+```{r data-prep}
+data <- penguins %>%
+  drop_na() %>%
+  select(where(is.numeric), -year) %>%
+  scale() %>%
+  as_tibble()
+```
+
+# Your first KMeans model
+
+We choose an arbitrary number of clusters, here 3.
+
+```{r kmeans}
+kmeans_model <- data %>% kmeans(centers = 3)
+kmeans_model
+```
+
+The `kmeans` function returns an object (basically, a `list`!) with several **attributes**.
+
+1. `cluster`: This object contains the cluster assignments for each observation in your dataset. It is a vector that indicates which cluster each data point belongs to.
+
+```{r kmeans-attr-cluster}
+kmeans_model$cluster
+```
+
+2. `centers`: This object contains the centroid coordinates for each cluster. It is a matrix where each row represents a cluster and each column represents a variable in your dataset. The centroid coordinates represent the mean values of the variables within each cluster.
+
+```{r kmeans-attr-centers}
+kmeans_model$centers
+```
+
+3. `totss`: This object represents the total sum of squares (TSS), which is the sum of squared distances between each data point and the overall centroid of the data. It measures the total variability in the dataset.
+
+```{r kmeans-attr-totss}
+kmeans_model$totss
+```
+
+5. `withinss`: This object is a numeric vector that contains the within-cluster sum of squares (WCSS) for each cluster. It represents the sum of squared distances between each data point and its centroid within the cluster.
+
+```{r kmeans-attr-withinss}
+kmeans_model$withinss
+```
+
+4. `tot.withinss`: This object represents the total within-cluster sum of squares (WCSS), which is a measure of how compact the clusters are. It indicates the sum of squared distances between each data point and its centroid within the assigned cluster. Computed as `sum(withinss)`
+
+```{r kmeans-attr-withinss}
+kmeans_model$tot.withinss
+```
+
+6. `betweenss`: This object represents the between-cluster sum of squares (BCSS), which is the sum of squared distances between the cluster centroids and the overall centroid of the data. It measures the separation between clusters. Computed as `totss - tot.withinss`.
+
+```{r kmeans-attr-betwenss}
+kmeans_model$betweenss
+```
+
+7. `size`: The number of points in each cluster.
+
+```{r kmeans-attr-size}
+kmeans_model$size
+```
+
+8. `iter`: This object represents the number of iterations required for the K-Means algorithm to converge and find the final cluster assignments.
+
+```{r kmeans-attr-iter}
+kmeans_model$iter
+```
+
+9. `ifault`: This object is an integer code that indicates the convergence status of the K-Means algorithm. It can take the following values:
+   - 0: Convergence was achieved (the algorithm successfully assigned all data points to clusters).
+   - 1: The algorithm reached the maximum number of iterations without converging.
+   - 2: Some of the clusters became empty (no data points were assigned to them).
+   - 3: The algorithm encountered numerical difficulties (e.g., due to floating-point overflow or underflow).
+
+```{r kmeans-attr-ifault}
+kmeans_model$ifault
+```
+
+# Visualise clustering results
+
+```{r kmeans-visualisation}
+mass_v_bill_length <- kmeans_model %>%
+  fviz_cluster(
+    data = data,
+    choose.vars = c("body_mass_g", "bill_length_mm"),
+    ggtheme = theme_minimal()
+  ) + labs(x = NULL, y = NULL, title = NULL)
+
+mass_vs_bill_depth <- kmeans_model %>%
+  fviz_cluster(
+    data = data,
+    choose.vars = c("body_mass_g", "bill_depth_mm"),
+    ggtheme = theme_minimal()
+  ) + labs(x = NULL, y = NULL, title = NULL)
+
+mass_v_bill_length + mass_vs_bill_depth +
+  plot_annotation(
+    title = "Clustering: Mass vs Bill Length (left) and Bill Depth (right)",
+  ) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+How shall we interpret these results? The plot on the left might induce you to think three clusters are indeed the ideal number. On the other hand, the plot on the right displays significant overlap across two groups.
+
+Indeed, we would have to make this eye-ball comparison across all possible combination of variables. We used 4; however, we cannot do this when the number of variables becomes 8 or 10. Besides, this is not a sound way to assert statistical properties in the data. For this reason, we resort to other evaluation criteria.
+
+# The optimal number of clusters
+
+With k-means algorithm, we choose the number of clusters beforehand. What changes if we set the number of clusters to five, or six?
+
+```{r kmeans-6}
+kmeans_6 <- data %>% kmeans(centers = 6)
+
+mass_v_bill_length <- kmeans_6 %>%
+  fviz_cluster(
+    data = data,
+    choose.vars = c("body_mass_g", "bill_length_mm"),
+    ggtheme = theme_minimal()
+  ) + labs(x = NULL, y = NULL, title = NULL)
+
+mass_vs_bill_depth <- kmeans_6 %>%
+  fviz_cluster(
+    data = data,
+    choose.vars = c("body_mass_g", "bill_depth_mm"),
+    ggtheme = theme_minimal()
+  ) + labs(x = NULL, y = NULL, title = NULL)
+
+mass_v_bill_length + mass_vs_bill_depth +
+  plot_annotation(
+    title = "Clustering: Mass vs Bill Length (left) and Bill Depth (right)",
+  ) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+```
