@@ -1,0 +1,226 @@
+---
+title: "Cluster Analysis - K-Means Evaluation"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
+# Lecture outline
+
+This lecture covers the following aspects of k-means clustering:
+
+1. Assumptions behind the model.
+2. Data preprocessing.
+3. Diagnostics metrics.
+
+In the second part of the lecture, we present the DBSCAN algorithm, which is a more advanced version of k-means. We will present the different assumptions it makes and hint at its differences from the regular k-means algorithm.
+
+# Assumptions behind K-Means
+
+The key assumption behind k-means clustering is that every cluster is:
+
+1. Convex (i.e. round).
+2. Has a well-defined, somewhat spherical shape.
+3. Every cluster covers approximately the same "area".
+
+This is a strong assumption. In other words, K-means works best on well-behaved data, where each cluster has similar variance across variables. The algorithm gives poor results when clusters are elongated or have irregular shapes:
+
+![poor k-means results](https://scikit-learn.org/stable/_images/sphx_glr_plot_kmeans_assumptions_002.png)
+
+In particular, this implies that the K-Means algorithm is sensitive to outliers.
+
+# Import libraries
+
+```{r setup, echo=FALSE, warning=FALSE}
+# data
+library(palmerpenguins)
+
+# data manipulation
+library(tidyverse)
+library(patchwork) # just an extra
+
+theme_set(theme_minimal()) # use a decent theme
+
+# clustering
+library(cluster) # for silhouette
+library(factoextra) # viz and cluster selection
+library(fpc) # other clustering metrics
+
+set.seed(42) # reproducibility
+```
+
+# Data processing
+
+As a reminder:
+
+1. Drop null values for simplicity (in a real world setting, we might want to interpolate them).
+2. Drop categorical variables: the algorithm can only reason with quantitative data. Encoding strategies (i.e., ways to encode qualitative variables into categorical variables) are beyond the scope of this lecture.
+3. Scale data. This is a crucial step for two reasons:
+
+
+* Equalizing Variable Importance: Clustering algorithms often rely on distance-based metrics, such as Euclidean distance, to measure the similarity between data points. Variables with larger scales or larger variances can dominate the clustering process and have a disproportionate influence on the results. Scaling the data ensures that all variables contribute equally to the clustering process, preventing any single variable from overpowering the others.
+
+* Resolving Unit Discrepancies: When the variables in the dataset have different units or scales, clustering algorithms may incorrectly assign higher weight to variables with larger values or scales. Scaling the data eliminates these unit discrepancies, allowing for a fair comparison and clustering based on the inherent patterns and structures in the data.
+
+```{r data-prep}
+data <- penguins %>%
+  drop_na() %>%
+  select(where(is.numeric), -year) %>%
+  scale() %>%
+  as_tibble()
+```
+
+# Fitting a k-means model
+
+```{r}
+kmeans_model <- data %>%
+  kmeans(centers = 3)
+```
+
+# Clustering evaluation criteria
+
+Evaluation metrics play a crucial role in assessing the quality and performance of clustering algorithms. By far the most common ones are the within-cluster sum of squares and between-cluster sum of squares. However, these two comes with significant caveats, so we will mention other ones: gap statistic, silhouette statistic, and Calinski-Harabazs score.
+
+## 1. Inertia/Within-cluster sum of squares
+
+Inertia, also known as within-cluster sum of squares (WCSS or WSS), measures the compactness of clusters. It calculates the sum of squared distances between each data point and its centroid within the assigned cluster. **Lower values of inertia indicate more compact and well-separated clusters**.
+
+In other words, the lower the better. **However, inertia decreases monotonically, so the more clusters there are and the lower the score**.
+
+```{r inertia}
+inertia <- kmeans_model$tot.withinss
+```
+
+## 2. Between cluster sum of squares
+
+It is a measure that quantifies the separation or dispersion between clusters in a clustering algorithm. The BSS is computed as the sum of squared distances between the cluster centroids and the overall centroid of the data. The higher it is, the better. However, the same caveat for WSS applies here: BSS increases monotonically, so beware.
+
+```{r bss}
+bss <- kmeans_model$betweenss
+```
+
+## 3. Calinski-Harabazs score
+
+The Calinski-Harabasz index, also known as the variance ratio criterion, measures the ratio of between-cluster dispersion to within-cluster dispersion. It evaluates the compactness of clusters and the separation between them. Higher values of the Calinski-Harabasz index indicate better-defined clusters.
+
+```{r calinski-harabazs}
+cluster_labels <- kmeans_model$cluster
+
+ch <- fpc::calinhara(data, cluster_labels, 3)
+```
+
+## 4. Silhouette Score
+The silhouette score quantifies the quality of clustering by considering both the cohesion within clusters and the separation between clusters. It measures how similar an observation is to its own cluster compared to other clusters. **The silhouette score ranges from -1 to 1, where higher values indicate better-defined clusters.**
+
+Natively, is not really nice to compute with R:
+
+```{r silhouette-score}
+cluster_labels <- kmeans_model$cluster
+
+# Compute silhouette score
+sil <- silhouette(cluster_labels, dist(data))
+```
+
+The result is quite pleasant to display with `factoextra::fviz_silhouette`, though:
+
+```{r vis-silhouette}
+fviz_silhouette(sil)
+```
+
+To retrieve the metric itself, we need to compute the mean of the third column, `sil_width`:
+
+```{r compute-silhouette}
+sil_score <- sil[, 3] %>% mean()
+sil_score
+```
+
+## 5. Gap statistic
+
+The gap statistic has a more technical definition: the algorithm compares the within-cluster dispersion of the data with the expected dispersion if the data came from a uniform distribution (this is done via *bootstrapping*, a technique to simulate data).
+
+In other words, the gap statistics attempts to identify the point at which the clustering structure becomes meaningful. Typically, the optimal number of clusters is determined when the Gap statistic exhibits a significant increase and then levels off or starts to decrease.
+
+This function is slightly different from the others in that it accepts a `K.max` parameter and computes the gap statistics for all clusters in the range `2:K.max`. In other words, it returns a vector of metrics.
+
+```{r}
+result <- data %>% cluster::clusGap(FUNcluster = kmeans, K.max = 10)
+
+gap_stats <- result$Tab[, "gap"]
+```
+
+# Manual K selection
+
+Now that we know the metrics to evaluate our model against, we can write a for loop to iterate through a desired range of clusters.
+
+We set `NUM_CLUSTERS`, which represents the max number of clusters of the range we would like to inspect. Then, to save up time, we compute the `distance` to compute the silhouette score.
+
+We create 4 empty vectors of length `NUM_CLUSTERS` that will hold the scores: `wss`, `bss`, `sil` and `ch`.
+
+Then we iterate over the range `2:NUM_CLUSTERS`: for each loop, we fit a K-Means model with `k` clusters (first 2, then 3, 4... up to `NUM_CLUSTERS`). For each iteration, we store the evaluation metric we are interested in.
+
+Finally, we put all the vectors in a single `tibble` or `data.frame` object.
+
+We make the `wss` negative so that we can read all of these metrics as "the higher the better" (whereas the interpretation of the gap statistic is less straightforward).
+
+```{r}
+NUM_CLUSTERS <- 10L
+
+# we compute the distance here to avoid recomputing it every time
+distance <- dist(data)
+
+# generate an empty data.frame/tibble with this many cols and rows
+
+wss <- vector(length = NUM_CLUSTERS)
+bss <- vector(length = NUM_CLUSTERS)
+sil <- vector(length = NUM_CLUSTERS)
+ch <- vector(length = NUM_CLUSTERS)
+
+
+for (k in 2:NUM_CLUSTERS) { # it does not make sense to use K < 2
+  kmeans_result <- data %>% kmeans(centers = k)
+  kmeans_labels <- kmeans_result$cluster
+
+  wss[k] <- -kmeans_result$tot.withinss
+  bss[k] <- kmeans_result$betweenss
+  sil[k] <- silhouette(kmeans_labels, distance)[, 3] %>% mean()
+  ch[k] <- fpc::calinhara(data, kmeans_labels, k)
+}
+
+metrics <- tibble(
+  num_clusters = 1:NUM_CLUSTERS,
+  wss = wss,
+  bss = bss,
+  sil = sil,
+  ch = ch,
+  gap_stat = cluster::clusGap(x = data, FUNcluster = kmeans, K.max = NUM_CLUSTERS)$Tab[, "gap"]
+)
+```
+
+And we can display the results:
+
+```{r}
+metrics %>%
+  pivot_longer(cols = !num_clusters, names_to = "metric", values_to = "value") %>%
+  ggplot(aes(x = num_clusters, y = value, col = metric)) +
+  geom_line() +
+  facet_wrap(~metric, ncol = 1, scale = "free_y") +
+  labs(x = "Number of clusters") +
+  theme(legend.position = "bottom")
+```
+
+While it is nice to know what happens under the hood, it is quite complex. Of course, there are plenty of libraries that do this for us, such as `factoextra`.
+
+# Automatic K Selection
+
+```{r}
+fviz_nbclust(data, kmeans, method = "silhouette", k.max = NUM_CLUSTERS)
+```
+
+```{r}
+fviz_nbclust(data, kmeans, method = "wss", k.max = NUM_CLUSTERS)
+```
+
+```{r}
+fviz_nbclust(data, kmeans, method = "gap_stat", k.max = NUM_CLUSTERS)
+```
+
