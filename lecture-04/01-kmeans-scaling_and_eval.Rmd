@@ -136,7 +136,7 @@ sil_score
 
 ## 5. Gap statistic
 
-The gap statistic has a more technical definition: the algorithm compares the within-cluster dispersion of the data with the expected dispersion if the data came from a uniform distribution (this is done via *bootstrapping*, a technique to simulate data).
+The gap statistic has a more technical definition: the algorithm compares the within-cluster dispersion of the data with the expected dispersion if the data came from a uniform distribution (this is done via *bootstrapping*, a technique to simulate data). In a more intuitive terms: the main idea of the methodology is to compare the clusters inertia on the data to cluster and a reference dataset, i.e. a "fake" dataset where there are no clusters because the data points are uniformly distributed in space. The optimal choice of K is given by k for which the gap between the two results is maximum
 
 In other words, the gap statistics attempts to identify the point at which the clustering structure becomes meaningful. Typically, the optimal number of clusters is determined when the Gap statistic exhibits a significant increase and then levels off or starts to decrease.
 
