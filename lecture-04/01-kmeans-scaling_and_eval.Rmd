@@ -223,4 +223,3 @@ fviz_nbclust(data, kmeans, method = "wss", k.max = NUM_CLUSTERS)
 ```{r}
 fviz_nbclust(data, kmeans, method = "gap_stat", k.max = NUM_CLUSTERS)
 ```
-

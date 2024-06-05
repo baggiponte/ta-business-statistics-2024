@@ -73,14 +73,14 @@ db
 ```
 
 ```{r}
-data |> 
-  add_column(cluster = factor(db$cluster)) |> 
-  ggplot(aes(bill_length_mm, bill_depth_mm, color=cluster)) +
+data |>
+  add_column(cluster = factor(db$cluster)) |>
+  ggplot(aes(bill_length_mm, bill_depth_mm, color = cluster)) +
   geom_point()
 ```
 
 ```{r}
-fviz_cluster(db, data, geom="point")
+fviz_cluster(db, data, geom = "point")
 ```
 
 ```{r}
@@ -90,8 +90,8 @@ hdb
 
 ```{r}
 data |>
-  add_column(cluster = factor(hdb$cluster)) |> 
-  ggplot(aes(bill_length_mm, bill_depth_mm, color=cluster)) +
+  add_column(cluster = factor(hdb$cluster)) |>
+  ggplot(aes(bill_length_mm, bill_depth_mm, color = cluster)) +
   geom_point()
 ```
 
