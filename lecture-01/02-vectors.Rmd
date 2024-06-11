@@ -108,19 +108,19 @@ There are two primary ways to index a vector in R:
 
 1.  **Positive indexing:** This method allows you to select elements by their positions. For example, if you want to access the third element of a vector, you can use the following syntax:
 
-```{r}
+```r
 vector_name[3]
 ```
 
 You can also select multiple elements by specifying a vector of positions:
 
-```{r}
+```r
 vector_name[c(1, 3, 5)]
 ```
 
 1.  **Logical indexing:** This method allows you to select elements based on a logical condition. For example, if you want to access all elements greater than a specific value, you can use the following syntax:
 
-```{r}
+```r
 vector_name[vector_name > value]
 ```
 
