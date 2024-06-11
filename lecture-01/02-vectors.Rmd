@@ -45,8 +45,10 @@ matrix_data <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, ncol = 2)
 
 ```{r}
 # Create a data frame with 3 rows and 2 columns
-data_frame <- data.frame(name = c("John", "Mary", "Bob"),
-                         age = c(25, 30, 35))
+data_frame <- data.frame(
+  name = c("John", "Mary", "Bob"),
+  age = c(25, 30, 35)
+)
 ```
 
 # Vectors
@@ -213,10 +215,14 @@ multiplication_result <- matrix_example %*% matrix2
 
 ```{r}
 # Create a 3x4 matrix filled by columns
-matrix_example <- matrix(c(1, 4, 7, 10,
-                           2, 5, 8, 11,
-                           3, 6, 9, 12),
-                         nrow = 3, ncol = 4)
+matrix_example <- matrix(
+  c(
+    1, 4, 7, 10,
+    2, 5, 8, 11,
+    3, 6, 9, 12
+  ),
+  nrow = 3, ncol = 4
+)
 ```
 
 Now, let's perform subsetting with bigger ranges:
