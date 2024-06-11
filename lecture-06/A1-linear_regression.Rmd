@@ -1,0 +1,178 @@
+---
+title: "Appendix 1: Linear Regression"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
+# Appendix layout
+
+This appendix is meant to be read alongside [this visual guide](https://mlu-explain.github.io/linear-regression/). The notes are meant to ground linear regression in the previous courses and the applications in time series forecasting.
+
+# Linear Regression Review
+
+Linear regression is a fundamental statistical technique used to model and analyze the relationships between a dependent variable and one or more independent variables. It aims to find the best-fitting line through the data points that predicts the dependent variable based on the independent variable(s).
+
+The linear regression has many applications and is also frequently used in time-series modelling (from computing partial autocorrleation to statistical models themselves) and in statistical tests (such as the Dickey-Fuller test).
+
+In a linear regression model, the relationship between the dependent variable $y$ and the independent variable $x$ is modeled as a straight line: $$ y = \beta_0 + \beta_1x + \epsilon $$ Where:
+
+-   $\beta_0$ is the intercept
+-   $\beta_1$ is the slope
+-   $\epsilon$ is the error term
+
+# Finding the coefficients of a linear regression
+
+Linear regression coefficients can be obtained by solving a minimisation problem. The target function is a measure of the error, i.e. how far the prediction is from the true value. To make sense of the average error across all samples, we need a positive error. For this reason, we use the quadratic error, i.e. $(y - \hat\beta x)^2$.
+
+This means that our optimisation problem translates in finding the $\beta$ that minimises the quadratic error. That's why it's called the *least squares*. Data scientists call this *mean squared error* or *MSE*.
+
+If certain assumptions are met, we have a nice formula to find $\beta$:
+
+$$\widehat{\beta} = (X^{\operatorname{T}} X)^{-1} X^{\operatorname{T}} y$$
+
+which is simply the ratio of the **covariance between y and X and the variance of X** .
+
+If these assumptions don't hold, we just use our computer to find the solution - in this case, we say we "brute force" the algorithm, or use "linear solvers" i.e. programs that are designed to solve linear equations between matrices.
+
+While we don't need these assumptions to find the coefficients, if we satisfy them finding the $\beta$ can be much faster, and also we are sure to get the so-called "Best Linear Unbiased Estimator" (BLUE), which has the smallest variance.
+
+## Assumptions of Linear Regression
+
+These assumptions, as they appear in the Gauss-Markov theorem, are:
+
+1.  The model is a linear relation and there are no omitted variables.
+
+2.  The independent variables are linearly independent (i.e. the matrix is full rank).
+
+3.  The residuals $\varepsilon$ have zero conditional mean:
+
+$$
+\operatorname{E} [\varepsilon _{i} | X]=0.
+$$
+
+4.  Residuals $\varepsilon$ are homoscedastic, that is all have the same finite variance:
+
+$$
+\operatorname{Var} (\varepsilon _{i})=\sigma ^{2}<\infty \quad \text{for all} \; i
+$$
+
+5.  Errors are not correlated:
+
+$$
+\operatorname{Cov}(\varepsilon _{i},\varepsilon _{j})=0,\forall i\neq j.
+$$
+
+Now we are finally ready to see some code.
+
+# Loading libraries
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(palmerpenguins)
+
+theme_set(theme_minimal())
+```
+
+# Building a Simple Linear Regression Model
+
+**Exploring the Data:** First, we visualize the relationship between variables. Using the `palmerpenguins` dataset, we plot the relationship between body mass and flipper length of penguins.
+
+```{r}
+# Scatter plot to visualize the relationship
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point() +
+  labs(
+    title = "Relationship between Flipper Length and Body Mass",
+    x = "Flipper Length (mm)",
+    y = "Body Mass (g)"
+  )
+```
+
+**Fitting the Model:** We fit a simple linear regression model with `body_mass_g` as the dependent variable and `flipper_length_mm` as the independent variable.
+
+```{r}
+# Fit the linear model
+model <- lm(body_mass_g ~ flipper_length_mm, data = penguins)
+
+model
+```
+
+Let's make more sense out of this:
+
+```{r}
+# Summary of the model
+summary(model)
+```
+
+**Interpreting the Coefficients:** - **Intercept (**$\beta_0$): The expected body mass when the flipper length is zero. - **Slope (**$\beta_1$): The change in body mass for a one-unit change in flipper length.
+
+# Evaluating the Model
+
+Model fitting is easy: evaluation is the hard part. How do we know whether a model is adequate?
+
+From a statistical point of view, there are some indicators:
+
+**Statistical Significance of Coefficients:** P-values indicate whether the coefficients are significantly different from zero.
+
+```{r}
+# P-values of coefficients
+summary(model)$coefficients[, 4]
+```
+
+We can also look at the **R-squared**, which measures the proportion of variance in the dependent variable that is predictable from the independent variable.
+
+```{r}
+# R-squared value
+summary(model)$r.squared
+```
+
+Finally, we should always perform **residual analysis**. This simply means examining residuals (differences between observed and predicted values) helps assess model fit and assumptions. Remember: the Gauss-Markov assumes normally distributed, uncorrelated residuals.
+
+```{r}
+# Residuals plot
+model$residuals |>
+  plot(
+    main = "Residuals of the Model",
+    xlab = "Index", ylab = "Residuals"
+  )
+abline(h = 0, col = "red")
+```
+
+If residuals aren't normally distributed, it means there is still some signal in the data that can be used to make a more accurate prediction.
+
+Another useful visualisation is the `q-q` plot:
+
+```{r}
+model$residuals |> qqnorm()
+```
+
+A side note. Generally, we don't try to make the R-squared as high as possible. As econometrics, we just need to include the appropriate variables in the model. As data scientists, however, we just care about minimising the errors. If you recall the definition, computing the MSE is straightforward:
+
+```{r}
+model$residuals^2 |> mean()
+```
+
+Computing the error of a single model is almost always useless. Data scientist use errors to find the best out of several possible models. In fact, we can fit models much more complex than the previous one.
+
+# Multiple Linear Regression
+
+We can extend the model to include multiple predictors. For example:
+
+**Example: Adding Bill Length as a Predictor:**
+
+```{r}
+# Fit a multiple linear regression model
+multi_model <- lm(body_mass_g ~ flipper_length_mm + bill_length_mm, data = penguins)
+
+# Summary of the multiple linear regression model
+summary(multi_model)
+```
+
+**Exercise**. Try different combinations of independent variables. For each model
+
+1. Inspect and comment the residuals. Does their average look like zero? Are they homoskedastic?
+2. Look at the p-values: at what point do they start to become statistically insignificant?
+3. Look at the R-squared and the MSE: how do they relate?
+4. Looking at the MSE, what is the best model?
