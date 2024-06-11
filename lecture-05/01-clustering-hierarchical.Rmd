@@ -1,5 +1,5 @@
 ---
-title: "Clustering - Hierarchical"
+title: "Hierarchical Clustering - Agglomerative and Divisive"
 output: html_notebook
 editor_options:
   chunk_output_type: console
@@ -7,13 +7,13 @@ editor_options:
 
 # Goal of this lecture
 
-This lecture covers hierarchical clustering, as well as the last lecture about clustering. We shall cover:
+This lecture covers hierarchical clustering. There are three key ingredients to hierarchical clustering:
 
-1. Hierarchical clustering and distance matrices
-3. Comparing different linkage methods
-4. Using the `factoextra` and `NbClust` package to determine the optimal number of clusters
+1. gglomerative vs divisive. 
+2. Distance metrics.
+3. Linkage methods
 
-Finally, we shall wrap up the main takeaways from clustering.
+We'll use the `factoextra`, `cluster` and `NbClust` package to help us determine the optimal number of clusters. Finally, we shall wrap up the main takeaways from clustering.
 
 # Libraries
 
@@ -23,6 +23,7 @@ library(palmerpenguins)
 
 library(factoextra)
 library(NbClust)
+library(cluster)
 
 theme_set(theme_minimal())
 
@@ -37,11 +38,22 @@ The same as the previous lecture.
 data <- penguins %>%
   drop_na() %>%
   select(where(is.numeric), -year) %>%
-  # not needed, can simply write `%>% scale()`
-  mutate(across(everything(), ~ scale(.x) %>% as.vector()))
+  scale() %>%
+  as_tibble()
 
 data %>% head()
 ```
+
+# Agglomerative and divisive clustering
+
+Hierarchical clustering can be divided into two main types:
+
+* Agglomerative clustering: Commonly referred to as AGNES (AGglomerative NESting) works in a bottom-up manner. That is, each observation is initially considered as a single-element cluster (leaf). At each step of the algorithm, the two clusters that are the most similar are combined into a new bigger cluster (nodes). This procedure is iterated until all points are a member of just one single big cluster (root).
+* Divisive hierarchical clustering: Commonly referred to as DIANA (DIvise ANAlysis) works in a top-down manner. DIANA is like the reverse of AGNES. It begins with the root, in which all observations are included in a single cluster. At each step of the algorithm, the current cluster is split into two clusters that are considered most heterogeneous. The process is iterated until all observations are in their own cluster.
+
+![](https://bradleyboehmke.github.io/HOML/images/dendrogram2.png)
+
+Agglomerative clustering is good at identifying small clusters. Divisive hierarchical clustering, on the other hand, is better at identifying large clusters.
 
 # Computing distances
 
@@ -61,9 +73,39 @@ You can visualise distances with `factoextra::fviz_dist` - though it becomes qui
 fviz_dist(distance)
 ```
 
-# Fitting the algorithm
+# Divisive clustering with `diana`
 
-Then we can use this distance matrix to fit the hierarchical clustering models:
+```{r}
+data |> cluster::diana() |> fviz_dend()
+```
+
+# Agglomerative clustering: linkages
+
+This time, the hyperparameter is the linkage (*legame*). The most common linkages are:
+
+1. **Single Linkage (Minimum Linkage)**:
+   - **Definition**: The distance between two clusters is the shortest distance between any two points in the two clusters.
+   - **Intuition**: Imagine drawing a line between the two closest points from each cluster. Single linkage tends to find the narrowest or most direct connection between clusters, leading to elongated, chain-like clusters. It's like linking the nearest neighbors.
+
+2. **Complete Linkage (Maximum Linkage)**:
+   - **Definition**: The distance between two clusters is the longest distance between any two points in the two clusters.
+   - **Intuition**: Imagine finding the farthest pair of points between the clusters and measuring that distance. Complete linkage ensures that all points in a cluster are close to all points in the other cluster, creating more compact and spherical clusters. It's like ensuring the maximum separation between groups is minimized.
+
+3. **Average Linkage (Mean Linkage)**:
+   - **Definition**: The distance between two clusters is the average distance between all pairs of points in the two clusters.
+   - **Intuition**: Calculate the mean of all pairwise distances between points in the two clusters. This method balances the extremes of single and complete linkage, often resulting in moderately compact clusters. It's like considering the overall average distance to decide if clusters should merge.
+
+4. **Centroid Linkage**:
+   - **Definition**: The distance between two clusters is the distance between their centroids (mean positions of all points in the clusters).
+   - **Intuition**: Think of each cluster as a single point at its center. The clusters are merged based on the distance between these center points. This method can sometimes create non-intuitive cluster shapes if the centroids move significantly after merging.
+
+5. **Ward's Linkage**:
+   - **Definition**: The distance between two clusters is the increase in the total within-cluster variance when they are merged.
+   - **Intuition**: Ward's method aims to keep clusters as compact and similar in size as possible. It looks for the merger that causes the least increase in the overall variance within the clusters. It's like finding the most homogeneous combination, minimizing the "spread" of the combined cluster.
+   
+We need to choose the linkage measure appropriately, as different linkages will produce different cluster memberships on the same data.
+
+## Single linkage
 
 ```{r}
 distance %>%
@@ -206,3 +248,7 @@ The literature proposes some heuristics to assess the number of clusters, such a
 For hierarchical clustering, we also need to specify the linkage method - each one with its pros and cons.
 
 Algorithms like dbscan and hdbscan do not require to specify the number of clusters in advance, but we still need to choose an `epsilon` parameter carefully.
+
+## References
+
+* https://bradleyboehmke.github.io/HOML/hierarchical.html
