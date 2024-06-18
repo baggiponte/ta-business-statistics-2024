@@ -1,0 +1,535 @@
+---
+title: "Time Series Analysis: Trend, Seasonality"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
+# Lecture Layout
+
+* Time series analysis with `{zoo}` and `{xts}`.
+* Visual inspection of time series to recognise trend and seasonal patterns, including heteroskedasticity.
+* Using Autocorrelation and Partial Autocorrelation to explore temporal dependencies between the series.
+* Use statistical tests like Box-Ljung to determine whether a series is auto-correlated.
+* Preprocessing "tricks" to tame time-series: first differences and log transformations.
+* Your first ARIMA model.
+* Inspecting residuals for diagnostics.
+
+```{r}
+library(zoo)
+library(xts)
+library(forecast)
+
+library(ggplot2)
+theme_set(theme_minimal())
+```
+
+
+# Time series analysis with `{zoo}` and `{xts}`
+
+These representations assume you have two vectors: an observation vector (data) and a vector of dates or times of those observations. The `zoo` function combines them into a `zoo` object:
+
+```{r}
+x <- c(3, 4, 1, 4, 8)
+dt <- seq(as.Date("2018-01-01"), as.Date("2018-01-05"), by = "days")
+
+ts <- zoo(x, dt)
+print(ts)
+```
+
+The `xts` function is similar and returns an `xts` object:
+
+```{r}
+ts <- xts(x, dt)
+print(ts)
+```
+
+Once the data is captured within a `zoo` or `xts` object, you can extract the raw data via `coredata`, which returns a simple vector (or matrix):
+
+```{r}
+ts |> coredata()
+```
+
+You can extract the date or time part via `index`:
+
+```{r}
+ts |> index()
+```
+
+# 1. Graphical analysis
+
+## Dataset 1: European stock markets
+
+The `EuStockMarkets` dataset contains daily closing prices of major European stock markets: Germany's DAX, Switzerland's SMI, France's CAC, and the UK's FTSE, from 1991 to 1998.
+
+```{r}
+EuStockMarkets |> as.zoo() -> eu_stocks
+
+plot(eu_stocks, main = "European Stock Markets", xlab = "Date")
+```
+
+The data showcases an increasing trend.
+
+## Dataset 2: nhtemp
+
+The `nhtemp` dataset records the average yearly temperatures in New Haven, Connecticut, from 1912 to 1971.
+
+```{r}
+nhtemp |> as.zoo() -> nh_temperature
+
+plot(nh_temperature, main = "New Haven Temperature", ylab = "Temperature (Fahrenheit)", xlab = "Year")
+```
+
+What kind of pattern does the data display?
+
+## Dataset 3: AirPassengers
+
+The `AirPassengers` dataset contains monthly totals of international airline passengers from 1949 to 1960.
+
+```{r}
+AirPassengers |> as.zoo() -> air_passengers
+
+plot(air_passengers, main = "Air Passengers", ylab = "Number of Passengers", xlab = "Year")
+```
+
+The dataset demonstrates clear seasonal patterns and an overall increasing trend in air travel over time.
+
+## Dataset 4: Johnson & Johnson
+
+The `JohnsonJohnson` dataset contains the quarterly earnings per Johnson & Johnson share from 1960 to 1980.
+
+```{r}
+JohnsonJohnson |> as.zoo() -> jj
+
+plot(jj, main = "Johnson and Johnson Quarterly Earnings", ylab = "Earnings per Share", xlab = "Year")
+```
+
+What's the difference between this and the AirPassenger dataset?
+
+# 2. Trend analysis
+
+Most of the datasets display a growing trend. To further analyze the data, we use the lag operator to create lagged series and scatterplots of the data and their first lagged term.
+
+The lag operator \( L \) is a function that shifts a time series backward by a specified number of periods. For a time series \( \{x_t\} \), the lag operator \( L^k \) applied to \( x_t \) is defined as:
+
+\[ L^k x_t = x_{t-k} \]
+
+where \( k \) is the number of periods to lag. If \( k = 1 \), then \( L^1 x_t = x_{t-1} \), which means each value in the time series is shifted one period back.
+
+## Intuition
+
+The lag operator is used to compare the current values of a time series with its past values. By examining the relationship between a time series and its lagged values, we can identify patterns, autocorrelations, and potential predictive relationships. This is particularly useful in time series analysis for tasks such as forecasting, detecting seasonality, and understanding the temporal structure of the data.
+
+## New Haven Temperature
+
+```{r}
+lagged_plots <- function(data, name = "data", lags = c(1, 2, 3, 4)) {
+  lag_plot <- function(data, name, lag) {
+    plot(x = data, y = lag(data, k = lag), main = paste(name, "vs Lag", lag), xlab = name, ylab = paste("Lag", lag))
+  }
+
+  par(mfrow = c(2, 2))
+
+  for (lag in lags) {
+    lag_plot(data = data, name = name, lag = lag)
+  }
+
+  par(mfrow = c(1, 1))
+}
+
+lagged_plots(nh_temperature, name = "New Haven Temperature")
+```
+
+Here the time series does not seem to be correlated with its past values.
+
+```{r}
+air_passengers |> lagged_plots(name = "Air Passengers")
+```
+
+Here the correlation with past values looks stronger.
+
+```{r}
+jj |> lagged_plots(name = "Johnson&Johnson")
+```
+
+```{r}
+eu_stocks$DAX |> lagged_plots(name = "DAX")
+eu_stocks$SMI |> lagged_plots(name = "SMI", lags = c(4, 16, 32, 64))
+```
+
+### Correlation between stocks
+
+As a side note: how are the time series correlated between each other?
+
+```{r}
+cor(eu_stocks$DAX, eu_stocks$SMI)
+cor(eu_stocks$DAX, eu_stocks$CAC)
+cor(eu_stocks$DAX, eu_stocks$FTSE)
+```
+
+# 3. Autocorrelation and Partial Autocorrelation Functions
+
+## Autocorrelation Function (ACF)
+
+The autocorrelation function (ACF) measures the correlation between observations of a time series separated by \( k \) time units. It provides insights into the repetitive patterns and the degree of correlation among the observations. Mathematically, the ACF at lag \( k \) is given by:
+
+\[ \rho_k = \frac{\text{Cov}(x_t, x_{t-k})}{\text{Var}(x_t)} \]
+
+where \( \rho_k \) is the autocorrelation at lag \( k \).
+
+### Intuition
+
+- **ACF at lag 0**: Always equals 1, as it represents the correlation of the series with itself.
+- **Positive ACF values**: Indicate positive correlation between the series and its lagged values.
+- **Negative ACF values**: Indicate negative correlation.
+- **ACF gradually decreasing**: Suggests a trend or long-term correlation.
+- **ACF cut off after certain lags**: Indicates a weak or no correlation beyond certain lags, suggesting a more random process.
+
+## Partial Autocorrelation Function (PACF)
+
+The partial autocorrelation function (PACF) measures the correlation between observations of a time series separated by \( k \) time units, with the linear dependence of all the intermediate lags removed. It helps to identify the direct effect of a lag on the series, excluding the influence of other lags.
+
+### Intuition
+
+- **PACF at lag 1**: Represents the direct correlation between \( x_t \) and \( x_{t-1} \), without any intermediate lags.
+- **Significant PACF values**: Indicate strong direct relationships at those lags.
+- **PACF cut off after certain lags**: Suggests the order of the autoregressive process (AR).
+
+## Plotting ACF and PACF for the Four Time Series
+
+Analyse the ACF and PACF plots. Remember:
+
+1. The ACF plot is used to eye-ball the correlation between the series and its lagged terms, which will be useful to determine the number of MA components of a model (usually denoted as $q$)
+2. The PACF plot determines the correlation between precisely the lagged value and is used to determine the number of AR terms $p$.
+
+```{r}
+autocorr_plots <- function(data, name = "data") {
+  par(mfrow = c(2, 1))
+  acf(data, main = name)
+  pacf(data)
+  par(mfrow = c(1, 1))
+}
+
+nh_temperature |> autocorr_plots(name = "New Haven Temperature")
+air_passengers |> autocorr_plots(name = "Air Passengers")
+jj |> autocorr_plots(name = "Johnson & Johnson")
+eu_stocks$DAX |> autocorr_plots(name = "DAX")
+```
+
+Some more observations:
+
+1. The New Haven temperature series has the weakest dependency.
+2. With all the other time series: they display a strong correlation with past error terms. When we see an ACF with this structure, it might suggest we take care of the trend in the data.
+
+## Comparison of ACF and PACF Plots
+
+- **New Haven Temperature**: The ACF and PACF plots for the log differenced New Haven Temperature series should show less significant lags, indicating a stationary series with no strong autocorrelation.
+- **Air Passengers**: The ACF plot should show significant spikes at seasonal lags (e.g., 12 months), indicating seasonality. The PACF plot should help in identifying the order of the autoregressive model needed to capture this seasonality.
+- **Johnson & Johnson**: The ACF and PACF plots for the log differenced Johnson & Johnson series should reveal significant lags that indicate quarterly patterns and correlations.
+- **DAX**: The ACF plot for the log differenced DAX series should show quick decay, indicating that the series is stationary. The PACF plot will help identify any significant lags that need to be considered for modeling.
+
+# 4. Statistical tests for autocorrelation: the Box-Ljung text
+
+## Mathematical Introduction
+
+The Box-Ljung test is a statistical test used to determine whether a time series exhibits significant autocorrelation at multiple lags. It is particularly useful for checking the adequacy of models in time series analysis.
+
+The Box-Ljung test examines whether the observed autocorrelations up to a certain lag \( h \) are significantly different from zero. If the test statistic \( Q \) is large, it suggests that the series has significant autocorrelations, indicating that the null hypothesis of no autocorrelation can be rejected.
+
+Let's perform the Box-Ljung test on the log differenced series for each dataset.
+
+```{r}
+Box.test(nh_temperature, lag = 20, type = "Ljung-Box")
+```
+
+The p-value of the test will help determine if we reject the null hypothesis. A p-value less than 0.05 indicates significant autocorrelation.
+
+```{r}
+Box.test(air_passengers, lag = 20, type = "Ljung-Box")
+```
+
+```{r}
+Box.test(jj, lag = 20, type = "Ljung-Box")
+```
+
+```{r}
+Box.test(eu_stocks$DAX, lag = 20, type = "Ljung-Box")
+```
+
+We all expected the tests to confirm the hypothesis of significant correlation. We now
+
+# 5. Data Preprocessing for Time Series
+
+## 5.1 First Differences and Detrending
+
+In time series analysis, it is often necessary to remove trends and seasonality to make the data stationary. One common method for this is to take the first differences of the series.
+
+### Mathematical Introduction
+
+The first difference of a time series \( \{x_t\} \) is defined as:
+
+\[ \Delta x_t = x_t - x_{t-1} \]
+
+where \( \Delta \) is the difference operator. This operation essentially computes the change between consecutive observations. By differencing a time series, we can stabilize the mean of a time series by removing changes in the level of a time series, and thus eliminate (or reduce) trend and seasonality.
+
+### Intuition Behind Taking Differences
+
+Taking differences helps in transforming a non-stationary time series into a stationary one. A stationary time series has a constant mean and variance over time, making it easier to model and forecast. Differencing can also help in removing autocorrelation.
+
+### How this affects the data
+
+```{r}
+nh_temperature |>
+  diff() |>
+  plot(main = "Differenced New Haven Temperature", ylab = "Differenced Temperature (Fahrenheit)", xlab = "Year")
+```
+
+If we now look at the differenced series's ACF and PACF:
+
+```{r}
+nh_temperature |>
+  diff() |>
+  autocorr_plots(name = "Differenced New Haven Temperature")
+```
+
+```{r}
+air_passengers |>
+  diff() |>
+  plot(main = "Differenced Air Passengers", ylab = "Differenced Number of Passengers", xlab = "Year")
+
+air_passengers |>
+  diff() |>
+  autocorr_plots(name = "Differenced Air Passengers")
+```
+
+```{r}
+jj |>
+  diff() |>
+  plot(main = "Differenced Johnson & Johnson Quarterly Earnings", ylab = "Differenced Earnings per Share", xlab = "Year")
+
+jj |>
+  diff() |>
+  autocorr_plots(name = "Differenced Johnson & Johnson Quarterly Earnings")
+```
+
+```{r}
+eu_stocks$DAX |>
+  diff() |>
+  plot(main = "Differenced DAX", ylab = "Differenced DAX", xlab = "Year")
+
+eu_stocks$DAX |>
+  diff() |>
+  autocorr_plots(name = "Differenced DAX")
+```
+
+## 5.2 Log Transformation
+
+In time series analysis, another common preprocessing step is applying a log transformation to the data. The log transformation is used to stabilize the variance and to make the data more normally distributed. This can be particularly useful for datasets where the variance increases over time.
+
+### Mathematical Introduction
+
+The log transformation of a time series \( \{x_t\} \) is defined as:
+
+\[ y_t = \log(x_t) \]
+
+where \( \log \) is the natural logarithm. This transformation can help to reduce the skewness of the data and to stabilize the variance, making the series more suitable for further analysis.
+
+### Intuition Behind Using Logs
+
+Using the log transformation helps to:
+
+1. **Reduce Variability:** It compresses the range of the data, particularly if the data span several orders of magnitude. This can help in situations where the variability increases with the level of the series.
+2. **Handle Multiplicative Effects:** It converts multiplicative relationships into additive relationships, which can simplify the modeling process.
+3. **Stabilize Variance:** It stabilizes the variance, which is important for many statistical methods that assume homoscedasticity (constant variance).
+
+### Effects on the data
+
+```{r}
+nh_temperature |>
+  log() |>
+  plot(main = "Log Transformed New Haven Temperature", ylab = "Log Temperature (Fahrenheit)", xlab = "Year")
+```
+
+```{r}
+air_passengers |>
+  log() |>
+  plot(main = "Log Transformed Air Passengers", ylab = "Log Number of Passengers", xlab = "Year")
+```
+
+```{r}
+jj |>
+  log() |>
+  plot(main = "Log Transformed Johnson & Johnson Quarterly Earnings", ylab = "Log Earnings per Share", xlab = "Year")
+```
+
+```{r}
+eu_stocks$DAX |>
+  log() |>
+  plot(main = "Log Transformed DAX", ylab = "Log DAX", xlab = "Year")
+```
+
+### When to Use the Log Transformation
+
+- **Air Passengers:** The log transformation is particularly suitable for the Air Passengers dataset because the number of passengers increases exponentially over time. Applying the log transformation stabilizes the variance and makes the trend more linear, which simplifies the analysis.
+- **Johnson & Johnson Earnings:** This dataset also benefits from the log transformation due to the exponential growth in earnings over time. The log transformation stabilizes the variance and helps to reveal underlying patterns more clearly.
+- **DAX:** The log transformation can be useful for stock market indices like DAX, where returns are often multiplicative in nature. Applying the log transformation makes it easier to model and forecast.
+- **New Haven Temperature:** For datasets like New Haven Temperature, where the values do not vary multiplicatively and there is no significant trend that increases over orders of magnitude, the log transformation may not be necessary. In such cases, differencing is often sufficient to achieve stationarity without the need for a log transformation.
+
+By carefully choosing the appropriate transformation, we can better prepare our data for analysis and improve the accuracy of our models.
+
+## 5.3 Log and Differenced Transformation
+
+By combining the log transformation and first differencing, we can stabilize both the variance and mean of a time series. This can be particularly useful for making a non-stationary series stationary.
+
+### Final result on the data
+
+```{r}
+nh_temperature |>
+  log() |>
+  diff() -> nh_temperature_diff
+
+nh_temperature_diff |>
+  plot(main = "Log Differenced New Haven Temperature", ylab = "Log Differenced Temperature (Fahrenheit)", xlab = "Year")
+
+nh_temperature_diff |>
+  autocorr_plots(name = "Log Differenced New Haven Temperature")
+
+nh_temperature_diff |> Box.test(lag = 5, type = "Ljung-Box")
+```
+
+```{r}
+air_passengers |>
+  log() |>
+  diff() -> air_passengers_diff
+
+air_passengers_diff |>
+  plot(main = "Log Differenced Air Passengers", ylab = "Log Differenced Number of Passengers", xlab = "Year")
+
+air_passengers_diff |>
+  autocorr_plots(name = "Log Differenced Air Passengers")
+
+air_passengers_diff |> Box.test(lag = 5, type = "Ljung-Box")
+```
+
+```{r}
+jj |>
+  log() |>
+  diff() -> jj_diff
+
+jj_diff |>
+  plot(main = "Log Differenced Johnson & Johnson Quarterly Earnings", ylab = "Log Differenced Earnings per Share", xlab = "Year")
+
+jj_diff |>
+  autocorr_plots(name = "Log Differenced Johnson & Johnson Quarterly Earnings")
+
+jj_diff |> Box.test(lag = 5, type = "Ljung-Box")
+```
+
+```{r}
+eu_stocks$DAX |>
+  log() |>
+  diff() -> dax_diff
+
+dax_diff |>
+  plot(main = "Log Differenced DAX", ylab = "Log Differenced DAX", xlab = "Year")
+
+dax_diff |>
+  autocorr_plots(name = "Log Differenced DAX")
+
+dax_diff |> Box.test(lag = 5, type = "Ljung-Box")
+```
+
+Why do all of the time series fail to reject the null hypothesis of serial autocorrelation? That's because we did not remove the seasonal component!
+
+# 6. Your first ARIMA model
+
+Let's have a look back at the (partial) autocorrelation plots to determine the appropriate number of AR and MA terms.
+
+```{r}
+nh_temperature |>
+  autocorr_plots(name = "New Haven Temperature")
+```
+
+What `p` and `q` would you choose? The ACF is a bit ambiguous but it might be either 1 or 2. While the PACF is clearly 1.
+
+```{r}
+nh_temperature |>
+  arima(order = c(1, 0, 1))
+
+nh_temperature |>
+  arima(order = c(2, 0, 1))
+```
+
+Compare the differences.
+
+The `{forecast}` package offers an implementation of the `auto.arima` model, which uses some heuristics to determine the best parameters.
+
+```{r}
+nh_temperature |>
+  auto.arima()
+```
+
+How do they differ from the parameters we found?
+
+Finally, we should always inspect the residuals. 
+
+```{r}
+nh_temperature_arima <- nh_temperature |>
+  auto.arima()
+
+nh_temperature_arima |> checkresiduals()
+```
+
+The plot displays the following:
+
+1. The plot of the residuals themselves. We should always assess whether they are with mean zero and constant variance. This signifies we "extracted" all the meaning from the data.
+2. The ACF of the residuals. We should always check whether there is any remaining autocorrelation in the residuals.
+3. The histogram of the residuals. We should always check whether the residuals are normally distributed.
+
+Note that the `checkresiduals` function also runs the Ljung-box test.
+
+Another useful diagnostic tool is the Q-Q plot:
+
+```{r}
+nh_temperature_arima$residuals |> qqnorm(); qqline(nh_temperature_arima$residuals)
+```
+
+The idea behind this check is to see whether the residuals are (once again) normally distributed. We should also check this more thoroughly with a statistical test:
+
+```{r}
+shapiro.test(nh_temperature_arima$residuals)
+```
+
+The Shapiro-Wilk test's null hypothesis is that the data are not normally distributed. The p-values suggests we can reject the null. The same applies to the Jarque-Bera test:
+
+```{r}
+tseries::jarque.bera.test(nh_temperature_arima$residuals)
+```
+
+```{r}
+check_normality <- function(arima) {
+  residuals <- arima$residuals
+  residuals |> qqnorm(); qqline(residuals)
+  
+  shapiro <- shapiro.test(residuals)
+  jarque <- tseries::jarque.bera.test(residuals)
+  
+  list(
+    shapiro = shapiro$p.value,
+    jarque = jarque$p.value
+  )
+}
+```
+
+
+Let's repeat this procedure with another dataset.
+
+```{r}
+air_passengers_arima <- air_passengers |>
+  auto.arima()
+
+air_passengers_arima |>
+  checkresiduals()
+
+air_passengers_arima |> check_normality()
+```
