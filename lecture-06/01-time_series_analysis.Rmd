@@ -555,3 +555,7 @@ air_passengers_arima_diff |>
 
 air_passengers_arima_diff |> check_normality()
 ```
+
+# An example workflow
+
+![workflow-chart](../public/arima_workflow.png)
