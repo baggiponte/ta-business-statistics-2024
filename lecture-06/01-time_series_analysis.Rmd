@@ -125,7 +125,13 @@ The lag operator is used to compare the current values of a time series with its
 ```{r}
 lagged_plots <- function(data, name = "data", lags = c(1, 2, 3, 4)) {
   lag_plot <- function(data, name, lag) {
-    plot(x = data, y = lag(data, k = lag), main = paste(name, "vs Lag", lag), xlab = name, ylab = paste("Lag", lag))
+    plot(
+      y = data,
+      x = lag(data, k = lag),
+      main = paste(name, "vs Lag", lag),
+      ylab = name,
+      xlab = paste("Lag", lag)
+    )
   }
 
   par(mfrow = c(2, 2))
@@ -491,7 +497,8 @@ Note that the `checkresiduals` function also runs the Ljung-box test.
 Another useful diagnostic tool is the Q-Q plot:
 
 ```{r}
-nh_temperature_arima$residuals |> qqnorm(); qqline(nh_temperature_arima$residuals)
+nh_temperature_arima$residuals |> qqnorm()
+qqline(nh_temperature_arima$residuals)
 ```
 
 The idea behind this check is to see whether the residuals are (once again) normally distributed. We should also check this more thoroughly with a statistical test:
@@ -509,11 +516,12 @@ tseries::jarque.bera.test(nh_temperature_arima$residuals)
 ```{r}
 check_normality <- function(arima) {
   residuals <- arima$residuals
-  residuals |> qqnorm(); qqline(residuals)
-  
+  residuals |> qqnorm()
+  qqline(residuals)
+
   shapiro <- shapiro.test(residuals)
   jarque <- tseries::jarque.bera.test(residuals)
-  
+
   list(
     shapiro = shapiro$p.value,
     jarque = jarque$p.value
@@ -528,8 +536,22 @@ Let's repeat this procedure with another dataset.
 air_passengers_arima <- air_passengers |>
   auto.arima()
 
+air_passengers_arima
+
 air_passengers_arima |>
   checkresiduals()
 
 air_passengers_arima |> check_normality()
+```
+
+```{r}
+air_passengers_arima_diff <- air_passengers_diff |>
+  auto.arima()
+
+air_passengers_arima_diff
+
+air_passengers_arima_diff |>
+  checkresiduals()
+
+air_passengers_arima_diff |> check_normality()
 ```

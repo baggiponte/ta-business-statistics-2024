@@ -76,7 +76,9 @@ fviz_dist(distance)
 # Divisive clustering with `diana`
 
 ```{r}
-data |> cluster::diana() |> fviz_dend()
+data |>
+  cluster::diana() |>
+  fviz_dend()
 ```
 
 # Agglomerative clustering: linkages
