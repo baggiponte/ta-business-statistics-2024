@@ -5,6 +5,13 @@ editor_options:
   chunk_output_type: console 
 ---
 
+```{r setup, include=FALSE}
+library(zoo)
+library(tseries) # ADF and KPSS tests
+library(forecast)
+```
+
+
 # 1. ARIMA Modeling
 
 Now that we've analyzed the stationarity of our time series, let's move on to fitting ARIMA (AutoRegressive Integrated Moving Average) models to our data.
@@ -13,18 +20,20 @@ Now that we've analyzed the stationarity of our time series, let's move on to fi
 
 The `auto.arima()` function from the `forecast` package in R automatically selects the best ARIMA model according to either AIC, AICc or BIC value. Let's fit ARIMA models to our four stock market indices:
 
+```{r}
+# just take data from 1996
+stocks <- EuStockMarkets |> as.zoo() |> window(start="1996")
+
+dax <- stocks$DAX
+cac <- stocks$CAC
+ftse <- stocks$FTSE
+smi <- stocks$SMI
+```
+
+And now we can train an ARIMA model:
+
 ```{r fit_arima}
-arima_models <- lapply(colnames(EuStockMarkets), function(index) {
-  auto.arima(EuStockMarkets[, index])
-})
-
-names(arima_models) <- colnames(EuStockMarkets)
-
-for (index in names(arima_models)) {
-  cat("ARIMA model for", index, ":\n")
-  print(arima_models[[index]])
-  cat("\n")
-}
+dax_arima <- dax |> auto.arima()
 ```
 
 The output shows the selected ARIMA(p,d,q) model for each series, where:
@@ -76,23 +85,23 @@ Expanding window cross-validation is similar, but instead of sliding a fixed-siz
 
 ![expanding-window](https://skforecast.org/0.12.1/img/backtesting_refit.gif)
 
-Let's implement both methods and compute the RMSE for each of our time series:
+Let's implement both methods and compute the RMSE for each of our time series. `h` or `horizon` denotes the forecasting horizon, i.e. the number of steps in the future we want to predict.
 
 ```{r cross_validation}
 # Function to perform cross-validation
-cv_arima <- function(y, h = 1, window = 100, expanding = FALSE) {
+cv_arima <- function(y, horizon = 1, window = 100, expanding = FALSE) {
   n <- length(y)
-  errors <- numeric(n - window - h + 1)
+  errors <- numeric(n - window - horizon + 1)
   
-  for (i in 1:(n - window - h + 1)) {
+  for (i in 1:(n - window - horizon + 1)) {
     if (expanding) {
       train <- y[1:(window + i - 1)]
     } else {
       train <- y[i:(window + i - 1)]
     }
     model <- auto.arima(train)
-    forecast <- forecast(model, h = h)
-    errors[i] <- y[window + i + h - 1] - forecast$mean[h]
+    forecast <- forecast(model, h = horizon)
+    errors[i] <- y[window + i + horizon - 1] - forecast$mean[horizon]
   }
   
   return(sqrt(mean(errors^2)))
@@ -105,9 +114,9 @@ cv_results <- data.frame(
   Expanding_RMSE = numeric()
 )
 
-for (index in colnames(EuStockMarkets)) {
-  rolling_rmse <- cv_arima(EuStockMarkets[, index], expanding = FALSE)
-  expanding_rmse <- cv_arima(EuStockMarkets[, index], expanding = TRUE)
+for (index in colnames(stocks)) {
+  rolling_rmse <- cv_arima(stocks[, index], expanding = FALSE)
+  expanding_rmse <- cv_arima(stocks[, index], expanding = TRUE)
   
   cv_results <- rbind(cv_results, data.frame(
     Index = index,
