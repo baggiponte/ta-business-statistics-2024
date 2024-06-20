@@ -1,7 +1,7 @@
 ---
-title: "Introduction to the Tidyverse - `ggplot` and the Grammar of Graphics"
+title: "Introduction to the Tidyverse: `ggplot` and the Grammar of Graphics"
 output: html_notebook
-editor_options: 
+editor_options:
   chunk_output_type: console
 ---
 

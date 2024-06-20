@@ -1,5 +1,5 @@
 ---
-title: "Hierarchical Clustering - Agglomerative and Divisive"
+title: "Clustering: Agglomerative and Divisive Hierarchical Clustering"
 output: html_notebook
 editor_options:
   chunk_output_type: console
@@ -9,7 +9,7 @@ editor_options:
 
 This lecture covers hierarchical clustering. There are three key ingredients to hierarchical clustering:
 
-1. gglomerative vs divisive. 
+1. gglomerative vs divisive.
 2. Distance metrics.
 3. Linkage methods
 
@@ -104,7 +104,7 @@ This time, the hyperparameter is the linkage (*legame*). The most common linkage
 5. **Ward's Linkage**:
    - **Definition**: The distance between two clusters is the increase in the total within-cluster variance when they are merged.
    - **Intuition**: Ward's method aims to keep clusters as compact and similar in size as possible. It looks for the merger that causes the least increase in the overall variance within the clusters. It's like finding the most homogeneous combination, minimizing the "spread" of the combined cluster.
-   
+
 We need to choose the linkage measure appropriately, as different linkages will produce different cluster memberships on the same data.
 
 ## Single linkage

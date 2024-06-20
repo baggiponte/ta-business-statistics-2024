@@ -1,5 +1,5 @@
 ---
-title: "Multivariate Data Analysis with `{palmerpenguins}`"
+title: "Cluster Analysis: Analysing the Palmer Penguins Dataset"
 output: html_notebook
 editor_options:
   chunk_output_type: console
