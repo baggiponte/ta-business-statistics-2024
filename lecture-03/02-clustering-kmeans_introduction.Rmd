@@ -1,5 +1,5 @@
 ---
-title: "Cluster Analysis - K-Means overview"
+title: "Cluster Analysis: K-Means overview"
 output: html_notebook
 editor_options:
   chunk_output_type: console

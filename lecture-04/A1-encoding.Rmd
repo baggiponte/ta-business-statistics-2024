@@ -1,3 +1,10 @@
+---
+title: "Appendix 1: Categorical variables encoding"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
 # Appendix 1: Categorical variables encoding
 
 K-Means clustering algorithm is primarily designed to work with quantitative variables rather than categorical variables. The algorithm calculates distances between data points based on numerical values, making it less suitable for categorical data. However, there are ways to convert categorical variables into numerical ones to use K-Means clustering, though it comes with some caveats.
