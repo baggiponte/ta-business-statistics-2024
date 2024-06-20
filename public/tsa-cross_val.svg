@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <!-- Rolling Window Cross-Validation -->
+  <text x="400" y="30" font-family="Arial" font-size="20" text-anchor="middle" font-weight="bold">Time Series Cross-Validation Methods</text>
+  
+  <text x="200" y="70" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Rolling Window</text>
+  
+  <!-- Timeline for Rolling Window -->
+  <line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-width="2"/>
+  <line x1="50" y1="95" x2="50" y2="105" stroke="black" stroke-width="2"/>
+  <line x1="350" y1="95" x2="350" y2="105" stroke="black" stroke-width="2"/>
+  <text x="45" y="120" font-family="Arial" font-size="12" text-anchor="end">1</text>
+  <text x="355" y="120" font-family="Arial" font-size="12" text-anchor="start">T</text>
+  
+  <!-- Rolling Windows -->
+  <rect x="50" y="130" width="150" height="30" fill="blue" opacity="0.3" stroke="blue"/>
+  <text x="125" y="150" font-family="Arial" font-size="12" text-anchor="middle" fill="blue">Training</text>
+  <rect x="200" y="130" width="30" height="30" fill="red" opacity="0.3" stroke="red"/>
+  <text x="215" y="150" font-family="Arial" font-size="12" text-anchor="middle" fill="red">Test</text>
+  
+  <rect x="80" y="170" width="150" height="30" fill="blue" opacity="0.3" stroke="blue"/>
+  <text x="155" y="190" font-family="Arial" font-size="12" text-anchor="middle" fill="blue">Training</text>
+  <rect x="230" y="170" width="30" height="30" fill="red" opacity="0.3" stroke="red"/>
+  <text x="245" y="190" font-family="Arial" font-size="12" text-anchor="middle" fill="red">Test</text>
+  
+  <rect x="110" y="210" width="150" height="30" fill="blue" opacity="0.3" stroke="blue"/>
+  <text x="185" y="230" font-family="Arial" font-size="12" text-anchor="middle" fill="blue">Training</text>
+  <rect x="260" y="210" width="30" height="30" fill="red" opacity="0.3" stroke="red"/>
+  <text x="275" y="230" font-family="Arial" font-size="12" text-anchor="middle" fill="red">Test</text>
+  
+  <!-- Expanding Window Cross-Validation -->
+  <text x="600" y="70" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Expanding Window</text>
+  
+  <!-- Timeline for Expanding Window -->
+  <line x1="450" y1="100" x2="750" y2="100" stroke="black" stroke-width="2"/>
+  <line x1="450" y1="95" x2="450" y2="105" stroke="black" stroke-width="2"/>
+  <line x1="750" y1="95" x2="750" y2="105" stroke="black" stroke-width="2"/>
+  <text x="445" y="120" font-family="Arial" font-size="12" text-anchor="end">1</text>
+  <text x="755" y="120" font-family="Arial" font-size="12" text-anchor="start">T</text>
+  
+  <!-- Expanding Windows -->
+  <rect x="450" y="130" width="150" height="30" fill="green" opacity="0.3" stroke="green"/>
+  <text x="525" y="150" font-family="Arial" font-size="12" text-anchor="middle" fill="green">Training</text>
+  <rect x="600" y="130" width="30" height="30" fill="red" opacity="0.3" stroke="red"/>
+  <text x="615" y="150" font-family="Arial" font-size="12" text-anchor="middle" fill="red">Test</text>
+  
+  <rect x="450" y="170" width="180" height="30" fill="green" opacity="0.3" stroke="green"/>
+  <text x="540" y="190" font-family="Arial" font-size="12" text-anchor="middle" fill="green">Training</text>
+  <rect x="630" y="170" width="30" height="30" fill="red" opacity="0.3" stroke="red"/>
+  <text x="645" y="190" font-family="Arial" font-size="12" text-anchor="middle" fill="red">Test</text>
+  
+  <rect x="450" y="210" width="210" height="30" fill="green" opacity="0.3" stroke="green"/>
+  <text x="555" y="230" font-family="Arial" font-size="12" text-anchor="middle" fill="green">Training</text>
+  <rect x="660" y="210" width="30" height="30" fill="red" opacity="0.3" stroke="red"/>
+  <text x="675" y="230" font-family="Arial" font-size="12" text-anchor="middle" fill="red">Test</text>
+  
+  <!-- Explanations -->
+  <text x="50" y="280" font-family="Arial" font-size="14" font-weight="bold">Rolling Window:</text>
+  <text x="50" y="300" font-family="Arial" font-size="12">• Fixed-size training window</text>
+  <text x="50" y="320" font-family="Arial" font-size="12">• Window slides forward for each iteration</text>
+  <text x="50" y="340" font-family="Arial" font-size="12">• Adapts to recent patterns, may forget old ones</text>
+  
+  <text x="450" y="280" font-family="Arial" font-size="14" font-weight="bold">Expanding Window:</text>
+  <text x="450" y="300" font-family="Arial" font-size="12">• Training window grows with each iteration</text>
+  <text x="450" y="320" font-family="Arial" font-size="12">• Includes all past data in each iteration</text>
+  <text x="450" y="340" font-family="Arial" font-size="12">• Retains all historical patterns</text>
+</svg>
