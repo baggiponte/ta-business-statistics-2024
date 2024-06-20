@@ -1,0 +1,368 @@
+---
+title: "Time Series Analysis: Stationarity tests"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console 
+---
+
+# Lecture outline
+
+1. Stationarity in time series
+2. Unit roots and the Augmented Dickey-Fuller test
+3. The KPSS test
+
+```{r setup, include=FALSE}
+library(zoo)
+library(tseries) # ADF and KPSS tests
+library(forecast)
+
+library(ggplot2)
+
+theme_set(theme_minimal())
+```
+
+# 1. Introduction to the EU Stock Markets Dataset
+
+For this lecture, we'll be using the EU Stock Markets dataset, which contains daily closing prices of major European stock indices. Let's load and explore the data:
+
+```{r plot_data}
+autoplot(EuStockMarkets) +
+  ggtitle("EU Stock Market Indices") +
+  ylab("Closing Price")
+```
+
+This dataset contains four time series:
+
+1. DAX (Germany)
+2. SMI (Switzerland)
+3. CAC (France)
+4. FTSE (UK)
+
+```{r load_data}
+stocks <- EuStockMarkets |> zoo::as.zoo()
+
+dax <- stocks$DAX
+smi <- stocks$SMI
+cac <- stocks$CAC
+ftse <- stocks$FTSE
+```
+
+# 2. Stationarity in Time Series
+
+Before we dive into specific tests, it's crucial to understand the concept of stationarity in time series analysis.
+
+A stationary time series is one whose statistical properties do not change over time. Specifically, a strictly stationary time series has the following characteristics:
+
+1. Constant mean
+2. Constant variance
+3. Autocovariance that does not depend on time
+
+In practice, we often work with a weaker form called "weak stationarity" or "covariance stationarity", which only requires the first two conditions and that the autocovariance depends only on the lag between time points, not on the time itself.
+
+Why is stationarity important?
+
+1. Many statistical forecasting methods are based on the assumption that the time series can be rendered approximately stationary through the use of mathematical transformations.
+2. A stationary series is easier to predict as we can assume that its properties will be the same in the future as they have been in the past.
+
+Let's visualize the concept of stationarity using our EU Stock Markets data:
+
+```{r stationarity_visualization}
+par(mfrow = c(2, 2))
+
+# Original series (non-stationary)
+plot(dax, main = "Original DAX Series", ylab = "Closing Price")
+
+# Differenced series (more stationary)
+plot(diff(dax), main = "Differenced DAX Series", ylab = "Price Change")
+
+# Rolling mean and variance of original series
+rolling_mean <- rollmean(dax, 30, align = "right", fill = NA)
+plot(dax, main = "DAX with Rolling Mean", ylab = "Closing Price")
+lines(rolling_mean, col = "red")
+
+rolling_var <- rollapply(dax, 30, var, align = "right", fill = NA)
+plot(rolling_var, main = "DAX with Rolling Variance", ylab = "Variance")
+
+par(mfrow = c(1, 1))
+```
+
+In these plots, we can see that:
+
+1. The original series is clearly non-stationary, with an upward trend and changing variance.
+2. The differenced series appears more stationary, fluctuating around a constant mean.
+3. The rolling mean of the original series changes over time, indicating non-stationarity.
+4. The rolling variance also changes over time, another indication of non-stationarity.
+
+# 3. Unit Roots and the Augmented Dickey-Fuller Test
+
+## 3.1 Understanding Unit Roots
+
+A unit root is a feature of some stochastic processes that can cause problems in statistical inference involving time series models. A unit root is present when a time series has a stochastic trend - in other words, when there is a systematic pattern that is unpredictable.
+
+To understand unit roots, let's consider an autoregressive model of order 1, or AR(1):
+
+$$ y_t = \phi y_{t-1} + \epsilon_t $$
+
+Where $y_t$ is the value of y at time t, $\phi$ is the autoregressive coefficient, and $\epsilon_t$ is white noise.
+
+- If $|\phi| < 1$, the series is stationary.
+- If $|\phi| = 1$, we have a unit root, and the series is non-stationary.
+- If $|\phi| > 1$, the series is explosive (rare in economic and financial data).
+
+When $\phi = 1$, we have what's called a random walk:
+
+$$ y_t = y_{t-1} + \epsilon_t $$
+
+This is non-stationary because its variance increases over time:
+
+$$ Var(y_t) = t\sigma^2 $$
+
+Where $\sigma^2$ is the variance of $\epsilon_t$.
+
+Let's visualize these concepts:
+
+```{r unit_root_visualization}
+generate_processes <- function(
+    length = 200,
+    ar_coefficient = 0.8,
+    explosive_coefficient = 1.02,
+    seed = 123) {
+  set.seed(seed)
+
+  t <- 1:length
+  e <- rnorm(length) # noise vector to add
+
+  # Stationary AR(1) process
+  y_stationary <- arima.sim(list(ar = ar_coefficient), n = length)
+
+  # Unit root process (random walk)
+  y_unit_root <- cumsum(e) |> as.zoo()
+
+  # Explosive process (a bit of code-fu)
+  # create a vector of length 'length'
+  y_explosive <- numeric(length)
+  # set the first value to the first noise value
+  y_explosive[1] <- e[1]
+  # every subsequent value is 'explosive_coefficient' * (the previous value) + (the noise)
+  for (i in 2:length) {
+    y_explosive[i] <- explosive_coefficient * y_explosive[i - 1] + e[i]
+  }
+
+  y_explosive <- y_explosive |> as.zoo()
+
+  return(
+    list(
+      stationary = y_stationary,
+      unit_root = y_unit_root,
+      explosive = y_explosive
+    )
+  )
+}
+
+processes <- generate_processes(length = 200, ar_coefficient = 0.6)
+
+par(mfrow = c(3, 1))
+plot(processes$stationary, type = "l", main = "Stationary AR(1) Process")
+plot(processes$unit_root, type = "l", main = "Unit Root Process (Random Walk)")
+plot(processes$explosive, type = "l", main = "Explosive Process")
+par(mfrow = c(1, 1))
+```
+
+You can clearly see that the first process is stationary: the mean is close to zero. The second process is a random walk and if you squint you will see that the mean might change over time, albeit not significantly. The last process, instead, is explosive: the mean is clearly increasing over time.
+
+```{r}
+inspect_stationarity <- function(series, lags = 20) {
+  par(mfrow = c(2, 2))
+
+  plot(series, main = "Original Series", ylab = "Closing Price")
+
+  plot(diff(series), main = "Differenced Series", ylab = "Price Change")
+
+  # Rolling mean and variance of original series
+  rolling_mean <- rollmean(series, lags, align = "right", fill = NA)
+  rolling_var <- rollapply(series, lags, var, align = "right", fill = NA)
+
+  lags_num <- paste0("(lags=", lags, ")")
+
+  plot(series, main = paste("Series with Rolling Mean", lags_num), ylab = "Closing Price")
+  lines(rolling_mean, col = "red")
+
+  plot(rolling_var, main = paste("Series with Rolling Variance", lags_num), ylab = "Variance")
+
+  par(mfrow = c(1, 1))
+}
+
+processes$stationary |> inspect_stationarity()
+
+processes$unit_root |> inspect_stationarity()
+
+processes$explosive |> inspect_stationarity()
+```
+
+## 3.2 The Augmented Dickey-Fuller Test
+
+The Augmented Dickey-Fuller (ADF) test is a formal statistical test for stationarity. Specifically, it tests for a unit root in the time series.
+
+The null hypothesis of the ADF test is that there is a unit root, meaning the time series is non-stationary. The alternative hypothesis is that the time series is stationary.
+
+The ADF test is based on the following regression:
+
+$$ \Delta y_t = \alpha + \beta t + \gamma y_{t-1} + \delta_1 \Delta y_{t-1} + \cdots + \delta_p \Delta y_{t-p} + \epsilon_t $$
+
+Where:
+- $\Delta y_t$ is the first difference of y
+- $\alpha$ is a constant
+- $\beta t$ is the time trend
+- $\gamma$ is the coefficient presenting process root (the focus of testing)
+- $p$ is the lag order of the autoregressive process
+
+The test statistic is the t-statistic for $\gamma$. If $\gamma = 0$, then the process has a unit root.
+
+Let's perform the ADF test on our synthetic data, using the `adf.test` function in the `{tseries}`. The null hypothesis is that the series has a unit root (i.e. it's non-stationary). The alternative hypothesis can be specified with the `alternative` argument: it can either be `"stationary"` (i.e., the parameter gamma is lower than 1) or `"explosive"` (i.e., the parameter gamma is greater than 1).
+
+```{r adf_test}
+# stationary process: we expect to reject the null
+processes$stationary |> adf.test(alternative = "stationary")
+
+# unit root process: we expect to fail to reject the null
+processes$unit_root |> adf.test(alternative = "stationary")
+
+# explosive process: we expect to reject the null
+processes$explosive |> adf.test(alternative = "explosive")
+```
+
+The hypotheses tests confirm our results. Let's repeat the test with the stocks data. We already expect the tests to fail to reject the null for the `alternative="explosive"`.
+
+```{r adf_test_stocks}
+dax |> adf.test(alternative = "stationary")
+smi |> adf.test(alternative = "stationary")
+cac |> adf.test(alternative = "stationary")
+ftse |> adf.test(alternative = "stationary")
+```
+
+Interpreting the results:
+
+- The null hypothesis is that the time series has a unit root (is non-stationary).
+- If the p-value < 0.05, we reject the null hypothesis and conclude that the series is stationary.
+- If the p-value > 0.05, we fail to reject the null hypothesis and conclude that the series has a unit root (is non-stationary).
+
+In our case, all p-values are greater than 0.05, indicating that we fail to reject the null hypothesis. This suggests that all four time series in the EU Stock Markets dataset have unit roots and are non-stationary.
+
+This is not surprising for stock market data, which often exhibits non-stationary behavior. In practice, we often need to difference the data (compute the changes from one period to the next) to achieve stationarity.
+
+Let's check if the differenced series are stationary:
+
+```{r adf_test_differenced}
+dax |>
+  diff() |>
+  adf.test(alternative = "stationary")
+smi |>
+  diff() |>
+  adf.test(alternative = "stationary")
+cac |>
+  diff() |>
+  adf.test(alternative = "stationary")
+ftse |>
+  diff() |>
+  adf.test(alternative = "stationary")
+```
+
+Now we see that all p-values are much smaller than 0.05, indicating that we reject the null hypothesis for all differenced series. This suggests that the differenced series are stationary.
+
+[Note: The previous content remains unchanged. We'll add the following section after the ADF test section.]
+
+# 4. The KPSS Test
+
+While the Augmented Dickey-Fuller (ADF) test is widely used, it's often beneficial to complement it with other tests. One such test is the Kwiatkowski-Phillips-Schmidt-Shin (KPSS) test. The KPSS test is different from the ADF test in terms of its null hypothesis, which makes it a valuable complement in assessing stationarity.
+
+## 4.1 Understanding the KPSS Test
+
+The KPSS test is used for testing a null hypothesis that an observable time series is stationary around a deterministic trend against the alternative of a unit root. In other words:
+
+- Null Hypothesis (H0): The time series is trend stationary.
+- Alternative Hypothesis (H1): The time series has a unit root (is not stationary).
+
+This is in contrast to the ADF test, where the null hypothesis is that the time series has a unit root.
+
+The KPSS test is based on the following model:
+
+$$ y_t = \xi t + r_t + \epsilon_t $$
+
+Where:
+- $\xi t$ is a deterministic trend
+- $r_t$ is a random walk: $r_t = r_{t-1} + u_t$, where $u_t$ is i.i.d. with mean 0 and variance $\sigma_u^2$
+- $\epsilon_t$ is a stationary error
+
+The test statistic is defined as:
+
+$$ KPSS = \frac{\sum_{t=1}^T S_t^2}{T^2 \hat{f_0}} $$
+
+Where:
+- $S_t = \sum_{i=1}^t \hat{\epsilon_i}$ is the partial sum of residuals
+- $\hat{f_0}$ is an estimator of the spectral density at frequency zero
+- $T$ is the sample size
+
+## 4.2 Applying the KPSS Test to EU Stock Markets Data
+
+Let's now apply the KPSS test to our EU Stock Markets data. The null hypothesis is that the time series is stationary, but you can specify whether the series is stationary around a level (i.e., a constant) or a trend.
+
+For example: we expect the `null = "Level"` to be rejected for all the stocks data:
+
+```{r kpss_test}
+dax |> kpss.test(null = "Level")
+smi |> kpss.test(null = "Level")
+cac |> kpss.test(null = "Level")
+ftse |> kpss.test(null = "Level")
+```
+
+If we specify `null = "Trend"`, the test also fail: we confirm that the series is non-stationary (neither around a level, nor around a trend). In other words, taking differences is necessary.
+
+```{r}
+dax |> kpss.test(null = "Trend")
+smi |> kpss.test(null = "Trend")
+cac |> kpss.test(null = "Trend")
+ftse |> kpss.test(null = "Trend")
+```
+
+Interpreting the results:
+
+- The null hypothesis is that the time series is trend stationary.
+- If the p-value < 0.05, we reject the null hypothesis and conclude that the series has a unit root (is not stationary).
+- If the p-value > 0.05, we fail to reject the null hypothesis and conclude that the series is trend stationary.
+
+In our case, all p-values are very small (< 0.01), indicating that we reject the null hypothesis for all series. This suggests that none of the four time series in the EU Stock Markets dataset are trend stationary, which aligns with our findings from the ADF test.
+
+Let's also check the differenced series:
+
+```{r kpss_test_differenced}
+dax |>
+  diff() |>
+  kpss.test(null = "Level")
+```
+
+The test fails, but why? Remember that even weak stationarity implies that autocovariance is not a function of time, which clearly is for our data:
+
+```{r}
+dax |>
+  diff() |>
+  plot()
+```
+
+However, if we take the logs...
+
+```{r}
+dax |>
+  log() |>
+  diff() |>
+  plot()
+
+dax |>
+  log() |>
+  diff() |>
+  kpss.test(null = "Level")
+```
+
+We (barely) fail to reject the null hypothesis. This implies that:
+
+1. If we model the logged series, we should difference once.
+2. If we model the original series, we should difference more than once.

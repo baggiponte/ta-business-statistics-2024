@@ -1,0 +1,81 @@
+---
+title: "Appendix 2: Comparing ADF and KPSS Tests"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console 
+---
+
+```{r}
+library(zoo)
+library(tseries)
+
+stocks <- EuStockMarkets |> zoo::as.zoo()
+
+dax <- stocks$DAX
+smi <- stocks$SMI
+cac <- stocks$CAC
+ftse <- stocks$FTSE
+```
+
+## 4.3 Comparing ADF and KPSS Tests
+
+The ADF and KPSS tests can be used together to gain more confidence in our conclusions about the stationarity of a time series. Here's how we can interpret the combined results:
+
+1. If ADF rejects the null hypothesis and KPSS fails to reject the null hypothesis, we have strong evidence of stationarity.
+2. If ADF fails to reject the null hypothesis and KPSS rejects the null hypothesis, we have strong evidence of a unit root (non-stationarity).
+3. If both tests reject their null hypotheses, we may have a series with some other complex form of non-stationarity.
+4. If neither test rejects its null hypothesis, the data may not be sufficiently informative to be sure about stationarity.
+
+Let's summarize our findings for the EU Stock Markets data:
+
+```{r summary_table}
+# ADF test on original series
+adf_results <- lapply(colnames(EuStockMarkets), function(index) {
+  EuStockMarkets[, index] |> adf.test(alternative = "stationary")
+})
+
+names(adf_results) <- colnames(EuStockMarkets)
+
+# ADF test on first differences
+adf_results_diff <- lapply(colnames(EuStockMarkets), function(index) {
+  EuStockMarkets[, index] |>
+    diff() |>
+    adf.test(alternative = "stationary")
+})
+
+names(adf_results_diff) <- colnames(EuStockMarkets)
+
+# KPSS test on original series
+kpss_results <- lapply(colnames(EuStockMarkets), function(index) {
+  EuStockMarkets[, index] |> kpss.test(null = "Level")
+})
+
+names(kpss_results) <- colnames(EuStockMarkets)
+
+# KPSS test on first differences
+kpss_results_diff <- lapply(colnames(EuStockMarkets), function(index) {
+  EuStockMarkets[, index] |>
+    diff() |>
+    kpss.test(null = "Level")
+})
+
+names(kpss_results_diff) <- colnames(EuStockMarkets)
+
+summary_table <- data.frame(
+  ADF_Original = sapply(adf_results, function(x) x$p.value),
+  KPSS_Original = sapply(kpss_results, function(x) x$p.value),
+  ADF_Differenced = sapply(adf_results_diff, function(x) x$p.value),
+  KPSS_Differenced = sapply(kpss_results_diff, function(x) x$p.value)
+)
+
+print(summary_table)
+```
+
+From this summary, we can conclude:
+
+1. For the original series: Both ADF and KPSS tests suggest non-stationarity (ADF fails to reject, KPSS rejects).
+2. For the differenced series: Both ADF and KPSS tests suggest stationarity (ADF rejects, KPSS fails to reject).
+
+These results provide strong evidence that the original EU Stock Markets series are non-stationary, but become stationary after differencing. This is a common characteristic of many financial time series.
+
+In practice, this suggests that we should work with the differenced series (i.e., returns rather than price levels) when building forecasting models or conducting further statistical analyses.
