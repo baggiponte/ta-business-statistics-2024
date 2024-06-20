@@ -1,0 +1,40 @@
+---
+title: "Relevant concepts"
+output: html_notebook
+editor_options:
+  chunk_output_type: console
+---
+
+# 1. Covariance and Correlation
+
+Covariance and correlation are both measures of the relationship between two variables, but they have distinct characteristics and applications:
+
+### Covariance:
+1. **Definition**: Covariance measures the degree to which two variables change together. If the variables tend to increase or decrease simultaneously, the covariance is positive. If one increases while the other decreases, the covariance is negative.
+2. **Calculation**:
+   \[
+   \text{Cov}(X, Y) = \frac{1}{n} \sum_{i=1}^n (X_i - \bar{X})(Y_i - \bar{Y})
+   \]
+   Where \( X \) and \( Y \) are two variables, \( \bar{X} \) and \( \bar{Y} \) are their means, and \( n \) is the number of data points.
+3. **Units**: Covariance is expressed in units that are the product of the units of the two variables. This makes it difficult to interpret the magnitude of covariance directly.
+4. **Range**: Covariance values range from \(-\infty\) to \(+\infty\). The sign indicates the direction of the relationship (positive or negative), but the magnitude is not standardized.
+
+### Correlation:
+1. **Definition**: Correlation measures the strength and direction of the linear relationship between two variables. It standardizes the measure of covariance by dividing it by the product of the variables' standard deviations.
+2. **Calculation**:
+   \[
+   \text{Corr}(X, Y) = \frac{\text{Cov}(X, Y)}{\sigma_X \sigma_Y}
+   \]
+   Where \( \text{Cov}(X, Y) \) is the covariance of \( X \) and \( Y \), and \( \sigma_X \) and \( \sigma_Y \) are the standard deviations of \( X \) and \( Y \), respectively.
+3. **Units**: Correlation is a dimensionless measure. This makes it easier to interpret the strength of the relationship.
+4. **Range**: Correlation values range from \(-1\) to \(+1\). A correlation of \(+1\) indicates a perfect positive linear relationship, \(-1\) indicates a perfect negative linear relationship, and \(0\) indicates no linear relationship.
+
+### Key Differences:
+- **Interpretation**: Covariance indicates the direction of the linear relationship (positive or negative), while correlation indicates both the direction and the strength of the linear relationship.
+- **Standardization**: Correlation is standardized, making it dimensionless and easier to interpret compared to covariance, which depends on the units of the variables.
+- **Range**: Correlation has a fixed range (\(-1\) to \(+1\)), while covariance does not have a fixed range.
+
+### Example:
+Consider two datasets, X and Y. If you calculate the covariance and find it to be \(50\), this indicates a positive relationship, but without context, it’s hard to interpret the strength. If the correlation is calculated as \(0.8\), it not only confirms the positive relationship but also suggests a strong linear relationship.
+
+In summary, covariance provides a measure of the direction of the relationship between variables, whereas correlation provides a standardized measure of both the direction and strength of the relationship.
